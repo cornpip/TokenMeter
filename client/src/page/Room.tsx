@@ -1,62 +1,62 @@
-import { Button, TextField, List, ListItem, ListItemText, IconButton, Typography } from '@mui/material'
-import EditIcon from '@mui/icons-material/Edit'
-import DeleteIcon from '@mui/icons-material/Delete'
-import { getRooms, createRoom, updateRoom, deleteRoom, getRoomsBefore } from '../api/api';
-import { useEffect, useState } from 'react'
+import { Button, TextField, List, ListItem, ListItemText, IconButton, Typography } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { createRoom, updateRoom, deleteRoom, getRoomsBefore } from '../api/api';
+import { useEffect, useState } from 'react';
 import { RoomEntity } from '../interface/entity';
 
 export const Room = () => {
-    const [rooms, setRooms] = useState<RoomEntity[]>([])
-    const [newRoomName, setNewRoomName] = useState<string>('')
-    const [editingRoomId, setEditingRoomId] = useState<number | null>(null)
-    const [editingRoomName, setEditingRoomName] = useState<string>('')
+    const [rooms, setRooms] = useState<RoomEntity[]>([]);
+    const [newRoomName, setNewRoomName] = useState<string>('');
+    const [editingRoomId, setEditingRoomId] = useState<number | null>(null);
+    const [editingRoomName, setEditingRoomName] = useState<string>('');
 
     useEffect(() => {
-        fetchRooms()
-    }, [])
+        fetchRooms();
+    }, []);
 
     const fetchRooms = async () => {
         try {
             const response = await getRoomsBefore();
-            setRooms(response.data)
+            setRooms(response.data);
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
-    }
+    };
 
     const handleCreateRoom = async () => {
         if (newRoomName) {
             try {
-                await createRoom(newRoomName)
-                setNewRoomName('')
-                fetchRooms()
+                await createRoom(newRoomName);
+                setNewRoomName('');
+                fetchRooms();
             } catch (error) {
-                console.error(error)
+                console.error(error);
             }
         }
-    }
+    };
 
     const handleUpdateRoom = async () => {
         if (editingRoomId !== null && editingRoomName) {
             try {
-                await updateRoom(editingRoomId, editingRoomName)
-                setEditingRoomId(null)
-                setEditingRoomName('')
-                fetchRooms()
+                await updateRoom(editingRoomId, editingRoomName);
+                setEditingRoomId(null);
+                setEditingRoomName('');
+                fetchRooms();
             } catch (error) {
-                console.error(error)
+                console.error(error);
             }
         }
-    }
+    };
 
     const handleDeleteRoom = async (id: number) => {
         try {
-            await deleteRoom(id)
-            fetchRooms()
+            await deleteRoom(id);
+            fetchRooms();
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
-    }
+    };
 
     return (
         <div style={{ padding: '20px' }}>
@@ -96,8 +96,8 @@ export const Room = () => {
                                             edge="end"
                                             aria-label="edit"
                                             onClick={() => {
-                                                setEditingRoomId(room.id)
-                                                setEditingRoomName(room.name)
+                                                setEditingRoomId(room.id);
+                                                setEditingRoomName(room.name);
                                             }}
                                         >
                                             <EditIcon />
@@ -119,5 +119,5 @@ export const Room = () => {
                 ))}
             </List>
         </div>
-    )
-}
+    );
+};

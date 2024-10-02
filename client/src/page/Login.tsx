@@ -1,5 +1,5 @@
 import { Box, Button, Container, Input, Paper, TextField, Typography } from '@mui/material';
-import { blue, purple } from '@mui/material/colors';
+import { blue } from '@mui/material/colors';
 import React from 'react';
 
 export const Login = () => {
