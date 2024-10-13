@@ -1,50 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { Box } from '@mui/material';
-import { purple } from '@mui/material/colors';
+import React, { useEffect, useRef, useState } from 'react';
+import { Box, IconButton, InputAdornment, TextField } from '@mui/material';
 import { createChat, createChatDto, getChats } from '../api/api';
 import { ChatEntity } from '../interface/entity';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useChatStore } from '../status/store';
 import OpenAI from 'openai';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import rehypeRaw from 'rehype-raw';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { github } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import 'github-markdown-css';
 import { ChatCompletionMessageParam } from 'openai/src/resources/index.js';
-
-const CodeBlock: React.FC<any> = ({ node, inline, className, children, ...props }) => {
-    const match = /language-(\w+)/.exec(className || '');
-    return !inline && match ? (
-        <SyntaxHighlighter
-            language={match[1]}
-            PreTag="div"
-            {...props}
-            style={github}
-            customStyle={{
-                margin: '0',
-                padding: '0',
-                background: 'inherit',
-                backgroundColor: 'inherit',
-            }}
-        >
-            {String(children).replace(/\n$/, '')}
-        </SyntaxHighlighter>
-    ) : (
-        <code className={className} {...props}>
-            {children}
-        </code>
-    );
-};
-
-const renderers: any = {
-    code: CodeBlock,
-};
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import SendIcon from '@mui/icons-material/Send';
+import { MessageBox } from './MessageBox';
 
 export const ChatComponent = () => {
     console.log('@@@ ChatComponent');
+    const messagesEndRef = useRef<HTMLDivElement>(null);
     const chatId = useChatStore((state) => state.id);
     const [message, setMessage] = useState('');
     const [msgHistory, setMsgHistory] = useState<ChatCompletionMessageParam[]>([]);
@@ -72,15 +40,15 @@ export const ChatComponent = () => {
     });
 
     const handleKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+        // console.log(event.key);
         if (event.key === 'Enter') {
+            const target = event.target as HTMLInputElement;
             if (event.shiftKey) {
                 // Shift + Enter adds a new line
                 event.preventDefault();
 
-                const target = event.target as HTMLInputElement;
                 const start = target.selectionStart || 0;
                 const end = target.selectionEnd || 0;
-                console.log(start, end);
                 const newMessage = message.substring(0, start) + '\n' + message.substring(end);
                 setMessage(newMessage);
 
@@ -94,10 +62,6 @@ export const ChatComponent = () => {
                 handleSendMessage();
             }
         }
-    };
-
-    const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-        setMessage(event.target.value);
     };
 
     const handleSendMessage = async () => {
@@ -139,8 +103,12 @@ export const ChatComponent = () => {
         }
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setMessage(e.target.value);
+    };
+
     useEffect(() => {
-        console.log('# MsgHistory useEffect');
+        console.log('## MsgHistory useEffect');
         if (isSuccess) {
             setMsgHistory([]);
 
@@ -152,6 +120,13 @@ export const ChatComponent = () => {
         }
     }, [isSuccess, data]);
 
+    // msgHistory가 업데이트될 때 스크롤을 가장 아래로 이동
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' }); // 부드러운 스크롤
+        }
+    }, [msgHistory]);
+
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box>'An error has occurred: ' + error.message</Box>;
     return (
@@ -160,53 +135,65 @@ export const ChatComponent = () => {
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
+                justifyContent: 'space-between',
             }}
         >
-            <Box sx={{ bgcolor: purple[50], width: '100%', display: 'flex', flexDirection: 'column', overflow: 'auto', height: '90%' }}>
-                {data.map((v, i) => {
-                    let leftOrRight: string = v.is_answer ? 'flex-end' : 'flex-start';
-                    return (
-                        <Box key={v.id} sx={{ display: 'flex', direction: 'row', justifyContent: leftOrRight }}>
-                            <Box
-                                className="markdown-body"
-                                sx={{
-                                    display: 'flex',
-                                    bgcolor: '#ffffff', // Background color similar to the image
-                                    padding: '16px 16px',
-                                    borderRadius: '16px', // Rounded corners
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)', // Shadow effect
-                                    width: 'fit-content',
-                                    maxWidth: '80%',
-                                    color: 'black', // Text color
-                                    margin: '10px',
-                                    flexDirection: 'column',
-                                }}
-                            >
-                                <ReactMarkdown remarkPlugins={[remarkGfm, rehypeHighlight]} rehypePlugins={[rehypeRaw]} components={renderers}>
-                                    {v.message}
-                                </ReactMarkdown>
-                            </Box>
-                        </Box>
-                    );
-                })}
+            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', overflow: 'auto', flexGrow: 1 }}>
+                {data.map((v, i) => (
+                    <MessageBox key={i} v={v} />
+                ))}
+                <Box ref={messagesEndRef}></Box>
             </Box>
-            <Box sx={{ height: '10%' }}>
-                <Box
-                    contentEditable
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    width: '100%',
+                    borderRadius: '20px',
+                    backgroundColor: 'white',
+                }}
+            >
+                <TextField
+                    fullWidth
+                    multiline
+                    maxRows={4}
+                    placeholder="메시지 입력"
+                    variant="outlined"
                     sx={{
-                        // minHeight: "40%",
-                        // maxHeight: '80%',
-                        height: '100%',
-                        overflowY: 'auto',
-                        border: '1px solid #ccc',
-                        borderRadius: '4px',
-                        fontSize: '16px',
-                        outline: 'none',
-                        '&:focus': {
-                            borderColor: 'primary.main', // 포커스 시 테두리 색 변경
+                        '& .MuiOutlinedInput-root': {
+                            padding: '10px',
+                            backgroundColor: '#f5f5f5',
                         },
                     }}
-                ></Box>
+                    onChange={handleChange}
+                    onKeyDown={handleKeyDown}
+                    value={message}
+                    // onKeyDown={handleKeyDown}
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <IconButton>
+                                        <AttachFileIcon />
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={() => {}}>
+                                        <SendIcon />
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                            sx: {
+                                paddingRight: '50px',
+                                borderRadius: '20px',
+                            },
+                        },
+                    }}
+                />
             </Box>
         </Box>
     );
