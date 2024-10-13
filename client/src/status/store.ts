@@ -21,3 +21,13 @@ export const useChatStore = create<nowChatState>()(
         )
     )
 );
+
+interface ApiKeyStore {
+    apiKey: string;
+    setApiKey: (key: string) => void;
+}
+
+export const useApiKeyStore = create<ApiKeyStore>((set) => ({
+    apiKey: '',
+    setApiKey: (key: string) => set({ apiKey: key }),
+}));

@@ -3,8 +3,12 @@ import { blue } from '@mui/material/colors';
 import { LeftComponent } from '../components/LeftComponent';
 import { ChatComponent } from '../components/ChatComponent';
 import Grid from '@mui/material/Grid2';
+import { useApiKeyStore } from '../status/store';
 
 export const Main = () => {
+    const { apiKey, setApiKey } = useApiKeyStore();
+    console.log("main key check", apiKey);
+
     return (
         <>
             <Container maxWidth="xl" sx={{ bgcolor: blue[50], width: '98vw', height: '98vh', paddingTop: 1, paddingBottom: 3 }}>
