@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 interface User {
     id: number;
@@ -9,46 +9,46 @@ interface User {
 
 export const Test2 = () => {
     const [users, setUsers] = useState<User[]>([]);
-    const [name, setName] = useState('');
+    const [name, setName] = useState("");
     const [age, setAge] = useState<number>(0);
 
     // Read: 유저 목록 가져오기
     useEffect(() => {
         axios
-            .get<User[]>('http://localhost:4000/users')
+            .get<User[]>("http://localhost:4000/users")
             .then((response) => {
                 setUsers(response.data);
             })
             .catch((error) => {
-                console.error('There was an error!', error);
+                console.error("There was an error!", error);
             });
     }, []);
 
     // Create: 유저 추가
     const addUser = () => {
         axios
-            .post('http://localhost:4000/users', { name, age })
+            .post("http://localhost:4000/users", { name, age })
             .then((response) => {
                 setUsers([...users, { id: response.data.id, name, age }]);
-                setName('');
+                setName("");
                 setAge(0);
             })
             .catch((error) => {
-                console.error('There was an error!', error);
+                console.error("There was an error!", error);
             });
     };
 
     // Update: 유저 수정
     const updateUser = (id: number) => {
-        const updatedName = prompt('Enter new name:');
-        const updatedAge = Number(prompt('Enter new age:'));
+        const updatedName = prompt("Enter new name:");
+        const updatedAge = Number(prompt("Enter new age:"));
         axios
             .put(`http://localhost:4000/users/${id}`, { name: updatedName, age: updatedAge })
             .then(() => {
                 // setUsers(users.map((user) => (user.id === id ? { ...user, name: updatedName, age: updatedAge } : user)))
             })
             .catch((error) => {
-                console.error('There was an error!', error);
+                console.error("There was an error!", error);
             });
     };
 
@@ -60,7 +60,7 @@ export const Test2 = () => {
                 setUsers(users.filter((user) => user.id !== id));
             })
             .catch((error) => {
-                console.error('There was an error!', error);
+                console.error("There was an error!", error);
             });
     };
 

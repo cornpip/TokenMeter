@@ -1,5 +1,5 @@
-import { Button, Container } from '@mui/material';
-import OpenAI from 'openai';
+import { Button, Container } from "@mui/material";
+import OpenAI from "openai";
 
 export const Test = () => {
     const openai = new OpenAI({
@@ -8,31 +8,31 @@ export const Test = () => {
     });
 
     const btnFunc = async () => {
-        console.log('test');
+        console.log("test");
         const completion = await openai.chat.completions.create({
             messages: [
                 {
-                    role: 'system',
-                    content: 'You are a helpful assistant. You must answer in Korean.',
+                    role: "system",
+                    content: "You are a helpful assistant. You must answer in Korean.",
                 },
                 {
-                    role: 'user',
-                    content: '대한민국의 수도는 어디인가요?',
+                    role: "user",
+                    content: "대한민국의 수도는 어디인가요?",
                 },
                 // {
                 //     "role": "assistant",
                 //     "content": "대한민국의 수도는 서울입니다.",
                 // },
                 {
-                    role: 'user',
-                    content: '이전의 답변을 영어로 번역해 주세요.',
+                    role: "user",
+                    content: "이전의 답변을 영어로 번역해 주세요.",
                 },
                 {
-                    role: 'user',
-                    content: '영어로 말하라니까',
+                    role: "user",
+                    content: "영어로 말하라니까",
                 },
             ],
-            model: 'gpt-4o-mini',
+            model: "gpt-4o-mini",
         });
         console.log(completion.choices);
         console.log(completion.usage);

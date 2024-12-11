@@ -1,4 +1,4 @@
-import { Chat, ChatHistory } from './data.const';
+import { Chat, ChatHistory } from "./data.const";
 
 const now: Date = new Date();
 
@@ -9,7 +9,7 @@ for (let i = 0; i < 10; i++) {
     let c: Chat = {
         time: t,
         sequence: i,
-        text: 'a' + i.toString(),
+        text: "a" + i.toString(),
         isAnswer: i % 2 == 0,
         isQuestion: i % 2 != 0,
     };
