@@ -7,13 +7,19 @@ import OpenAI from "openai";
 import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
 import { MessageBox } from "./MessageBox";
 import { useParams } from "react-router-dom";
+import { useChatStore } from "../status/store";
 
 export const ChatComponent = () => {
     console.log("@@@ ChatComponent");
     const { roomId } = useParams<{ roomId: string }>();
     const safeRoomId = roomId ?? "0"; // 기본값 설정
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const [msgHistory, setMsgHistory] = useState<ChatCompletionMessageParam[]>([]);
+
+    const msgHistory = useChatStore((state) => state.msgHistory);
+    const setChatData = useChatStore((state) => state.setChatData);
+    const setMsgHistory = useChatStore((state) => state.setMsgHistory);
+
+    // const [msgHistory, setMsgHistory] = useState<ChatCompletionMessageParam[]>([]);
 
     const { isPending, error, data, isSuccess } = useQuery<ChatEntity[]>({
         queryKey: ["chats", roomId],
@@ -24,11 +30,13 @@ export const ChatComponent = () => {
 
     useEffect(() => {
         console.log("## MsgHistory useEffect");
+        console.log(data);
         if (isSuccess) {
             const initHistoryArr: ChatCompletionMessageParam[] = [];
             data.map((v) => {
                 initHistoryArr.push({ role: v.is_answer === 1 ? "system" : "user", content: v.message });
             });
+            setChatData(data);
             setMsgHistory(initHistoryArr);
         }
     }, [isSuccess, data]);

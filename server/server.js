@@ -65,7 +65,7 @@ app.post('/rooms', (req, res) => {
 
 // Room 조회 (GET)
 app.get('/rooms', (req, res) => {
-    db.all('SELECT * FROM Room', [], (err, rows) => {
+    db.all('SELECT * FROM Room ORDER BY id DESC', [], (err, rows) => {
         if (err) {
             return res.status(400).json({ error: err.message });
         }

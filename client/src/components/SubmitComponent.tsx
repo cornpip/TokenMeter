@@ -2,22 +2,35 @@ import { Box, IconButton, InputAdornment, TextField } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createChat, createChatDto, createRoom } from "../api/api";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
+import { useChatStore } from "../status/store";
+import OpenAI from "openai";
 
 export const SubmitComponent = () => {
     const [message, setMessage] = useState("");
     const { roomId } = useParams<{ roomId: string }>();
-    const safeRoomId = roomId ?? "0";
+    let safeRoomId = roomId ?? "0";
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
+
+    const chatData = useChatStore((state) => state.chatData);
+    const msgHistory = useChatStore((state) => state.msgHistory);
+    const setRoomId = useChatStore((state) => state.setRoomId);
+    const setMsgHistory = useChatStore((state) => state.setMsgHistory);
+
+    const openai = new OpenAI({
+        apiKey: import.meta.env.VITE_OPENAI_KEY,
+        dangerouslyAllowBrowser: true,
+    });
 
     const createChatMutation = useMutation({
         mutationFn: (dto: createChatDto) => {
             return createChat(dto);
         },
         onSuccess: (data, variables, context) => {
-            queryClient.invalidateQueries({ queryKey: ["chats"] });
+            queryClient.invalidateQueries({ queryKey: ["chats", safeRoomId] });
         },
     });
 
@@ -56,33 +69,36 @@ export const SubmitComponent = () => {
 
     const handleSendMessage = async () => {
         if (message.trim()) {
-            console.log(roomId);
+            // 채팅 시작이면 방 만들고 navigate
             if (safeRoomId === "0") {
-                console.log("createRoom logic~");
-                await createRoomMutation.mutateAsync("createRoom logic~");
+                await createRoomMutation.mutateAsync("createRoom logic~").then((res) => {
+                    safeRoomId = res.data.id;
+                    navigate(`./${safeRoomId}`);
+                });
             }
-
-            return;
 
             const n_msgHistory = [...msgHistory];
             n_msgHistory.push({ role: "user", content: message });
 
-            // 답변 시간 걸림, 나중에 stream api 사용하기
-            // openAi api
+            // 질문 요청(db)
+            const dto: createChatDto = {
+                time: new Date().toISOString(),
+                room_id: parseInt(safeRoomId),
+                message: message,
+                is_answer: 0,
+                sequence: chatData.length ? chatData[chatData.length - 1].sequence + 1 : 0,
+            };
+            createChatMutation.mutate(dto);
+            // 그럼 chatData는 mutate될 때마다 set이 되야하는거네? 일단 동기 맞추기 귀찮으니까 아래는 동기무관하게 작성
+
+            /*
+            openAi api
+            답변 시간 걸림, 나중에 stream api 사용하기
+            */
             const completion = await openai.chat.completions.create({
                 messages: n_msgHistory,
                 model: "gpt-4o-mini",
             });
-
-            // 질문(db)
-            const dto: createChatDto = {
-                time: new Date().toISOString(),
-                room_id: roomId,
-                message: message,
-                is_answer: 0,
-                sequence: data.length ? data[data.length - 1].sequence + 1 : 0,
-            };
-            createChatMutation.mutate(dto);
 
             const completionMsg = completion.choices[0].message;
             if (completionMsg.content) {
@@ -91,15 +107,13 @@ export const SubmitComponent = () => {
                 // 질문 응답(db)
                 const dto: createChatDto = {
                     time: new Date().toISOString(),
-                    room_id: roomId,
+                    room_id: parseInt(safeRoomId),
                     message: completionMsg.content,
                     is_answer: 1,
-                    sequence: data.length ? data[data.length - 1].sequence + 2 : 1,
+                    sequence: chatData.length ? chatData[chatData.length - 1].sequence + 1 : 1,
                 };
                 createChatMutation.mutate(dto);
             }
-
-            setMsgHistory(n_msgHistory);
             setMessage(""); // Clear the input after sending
         }
     };
