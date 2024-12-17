@@ -5,11 +5,9 @@ import { ChatEntity } from "../interface/entity";
 
 // 상태의 타입을 정의
 interface NowChatState {
-    roomId: number;
     msgHistory: ChatCompletionMessageParam[];
     chatData: ChatEntity[];
 
-    setRoomId: (id: number) => void;
     setMsgHistory: (msgHistory: ChatCompletionMessageParam[]) => void;
     setChatData: (chatData: ChatEntity[]) => void;
 }
@@ -19,11 +17,9 @@ export const useChatStore = create<NowChatState>()(
     devtools(
         persist(
             (set) => ({
-                roomId: 0,
                 msgHistory: [],
                 chatData: [],
 
-                setRoomId: (id: number) => set({ roomId: id }),
                 setMsgHistory: (msgHistory: ChatCompletionMessageParam[]) => set({ msgHistory }),
                 setChatData: (chatData: ChatEntity[]) => set({ chatData }),
             }),

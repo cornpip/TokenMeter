@@ -10,7 +10,6 @@ import { ChatComponent } from "../components/ChatComponent";
 export const Main = () => {
     const { apiKey, setApiKey } = useApiKeyStore();
     const { roomId } = useParams<{ roomId: string }>();
-    console.log("main key check", apiKey);
 
     return (
         <>

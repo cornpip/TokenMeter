@@ -2,8 +2,8 @@ import axios from "axios";
 
 export interface createChatDto {
     time: string;
-    message: string;
     sequence: number;
+    message: string;
     is_answer: number;
     room_id: number;
 }

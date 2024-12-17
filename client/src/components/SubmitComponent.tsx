@@ -8,6 +8,11 @@ import SendIcon from "@mui/icons-material/Send";
 import { useChatStore } from "../status/store";
 import OpenAI from "openai";
 
+const getTitle = (msg: string): string => {
+    const max_length: number = 15;
+    return msg.length > max_length ? msg.slice(0, max_length) : msg;
+};
+
 export const SubmitComponent = () => {
     const [message, setMessage] = useState("");
     const { roomId } = useParams<{ roomId: string }>();
@@ -17,8 +22,6 @@ export const SubmitComponent = () => {
 
     const chatData = useChatStore((state) => state.chatData);
     const msgHistory = useChatStore((state) => state.msgHistory);
-    const setRoomId = useChatStore((state) => state.setRoomId);
-    const setMsgHistory = useChatStore((state) => state.setMsgHistory);
 
     const openai = new OpenAI({
         apiKey: import.meta.env.VITE_OPENAI_KEY,
@@ -71,7 +74,7 @@ export const SubmitComponent = () => {
         if (message.trim()) {
             // 채팅 시작이면 방 만들고 navigate
             if (safeRoomId === "0") {
-                await createRoomMutation.mutateAsync("createRoom logic~").then((res) => {
+                await createRoomMutation.mutateAsync(getTitle(message)).then((res) => {
                     safeRoomId = res.data.id;
                     navigate(`./${safeRoomId}`);
                 });
@@ -80,13 +83,20 @@ export const SubmitComponent = () => {
             const n_msgHistory = [...msgHistory];
             n_msgHistory.push({ role: "user", content: message });
 
+            /**
+             * length - msgHistory 지표로도 가능할 듯, 근데 어차피 chatData render에 사용하니까
+             * 비동기 타이밍 문제 있을 수 있으니까 질문/답변은 seq, seq+1로 잡아두기
+             * 
+             * 질문 요청 중인 거 있으면 다른 질문 막아두는게?
+             */
+            const n_seq = chatData.length ? chatData[chatData.length - 1].sequence + 1 : 0;
             // 질문 요청(db)
             const dto: createChatDto = {
                 time: new Date().toISOString(),
                 room_id: parseInt(safeRoomId),
                 message: message,
                 is_answer: 0,
-                sequence: chatData.length ? chatData[chatData.length - 1].sequence + 1 : 0,
+                sequence: n_seq,
             };
             createChatMutation.mutate(dto);
             // 그럼 chatData는 mutate될 때마다 set이 되야하는거네? 일단 동기 맞추기 귀찮으니까 아래는 동기무관하게 작성
@@ -110,7 +120,7 @@ export const SubmitComponent = () => {
                     room_id: parseInt(safeRoomId),
                     message: completionMsg.content,
                     is_answer: 1,
-                    sequence: chatData.length ? chatData[chatData.length - 1].sequence + 1 : 1,
+                    sequence: n_seq === 0 ? 1 : n_seq + 1,
                 };
                 createChatMutation.mutate(dto);
             }
