@@ -86,7 +86,7 @@ export const SubmitComponent = () => {
             /**
              * length - msgHistory 지표로도 가능할 듯, 근데 어차피 chatData render에 사용하니까
              * 비동기 타이밍 문제 있을 수 있으니까 질문/답변은 seq, seq+1로 잡아두기
-             * 
+             *
              * 질문 요청 중인 거 있으면 다른 질문 막아두는게?
              */
             const n_seq = chatData.length ? chatData[chatData.length - 1].sequence + 1 : 0;

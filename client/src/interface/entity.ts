@@ -11,3 +11,8 @@ export interface ChatEntity {
     is_answer: number;
     room_id: number;
 }
+
+export interface ConfigEntity {
+    id: number;
+    openai_api_key: string;
+}

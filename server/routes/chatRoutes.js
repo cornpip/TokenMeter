@@ -44,4 +44,15 @@ router.delete('/:id', (req, res) => {
     });
 });
 
+// 특정 Room에 속한 Chat 조회 (GET)
+router.get('/room/:room_id', (req, res) => {
+    const { room_id } = req.params;
+    db.all(`SELECT * FROM ${TABLE_CHAT} WHERE room_id = ?`, [room_id], (err, rows) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
 module.exports = router;

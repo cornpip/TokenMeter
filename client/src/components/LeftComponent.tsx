@@ -21,7 +21,7 @@ export const LeftComponent = () => {
             navigate(`/main/${id}`);
         }
     };
-    
+
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box>'An error has occurred: ' + error.message</Box>;
     return (

@@ -2,8 +2,8 @@ const express = require('express');
 const { db, TABLE_CHAT, TABLE_ROOM, TABLE_CONFIG } = require('../db/database');
 
 const router = express.Router();
-// API 키 조회 (GET)
-router.get('/', (req, res) => {
+// getAll
+router.get('/all', (req, res) => {
     db.all(`SELECT * FROM ${TABLE_CONFIG} ORDER BY id DESC`, [], (err, rows) => {
         if (err) {
             return res.status(400).json({ error: err.message });
@@ -12,7 +12,18 @@ router.get('/', (req, res) => {
     });
 });
 
-// API 키 생성 (POST)
+// getById
+router.get('/:config_id', (req, res) => {
+    const { config_id } = req.params;
+    db.run(`SELECT * FROM ${TABLE_CONFIG} WHERE id=? ORDER BY id DESC`, [config_id], (err, rows) => {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
+
+// 일단 getAll 조회 없을 때만 생성
 router.post('/', (req, res) => {
     const { openai_api_key } = req.body;
     if (!openai_api_key) {
@@ -27,14 +38,10 @@ router.post('/', (req, res) => {
     });
 });
 
-// API 키 업데이트 (PUT)
+// put
 router.put('/:id', (req, res) => {
     const { id } = req.params;
     const { openai_api_key } = req.body;
-
-    if (!openai_api_key) {
-        return res.status(400).json({ error: 'openai_api_key is required' });
-    }
 
     db.run(
         `UPDATE ${TABLE_CONFIG} SET openai_api_key = ? WHERE id = ?`,

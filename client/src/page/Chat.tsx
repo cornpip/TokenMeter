@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { createChat, updateChat, deleteChat, getChatsBefore } from "../api/api";
+import { createChat, updateChat, deleteChat, getChatsbyRoomId } from "../api/api";
 import { ChatEntity } from "../interface/entity";
 import { useParams } from "react-router-dom";
 
@@ -48,7 +48,7 @@ export const Chat = () => {
 
     const fetchChats = async () => {
         try {
-            const response = await getChatsBefore(roomIdNumber);
+            const response = await getChatsbyRoomId(roomIdNumber);
             setChats(response.data);
         } catch (error) {
             console.error(error);

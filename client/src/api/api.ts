@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ConfigEntity } from "../interface/entity";
 
 export interface createChatDto {
     time: string;
@@ -6,6 +7,11 @@ export interface createChatDto {
     message: string;
     is_answer: number;
     room_id: number;
+}
+
+export interface updateConfigDto {
+    id: number;
+    openai_api_key: string;
 }
 
 const api = axios.create({
@@ -22,11 +28,10 @@ export const createRoom = (name: string) => api.post("/rooms", { name });
 export const updateRoom = (id: number, name: string) => api.put(`/rooms/${id}`, { name });
 export const deleteRoom = (id: number) => api.delete(`/rooms/${id}`);
 
-export const getChats = async (roomId: number | undefined) => {
-    const { data } = await api.get(`/rooms/${roomId}/chats`);
+export const getChatsbyRoomId = async (roomId: number | undefined) => {
+    const { data } = await api.get(`/chats/room/${roomId}`);
     return data;
 };
-export const getChatsBefore = (roomId: number) => api.get(`/rooms/${roomId}/chats`);
 
 export const createChat = (chat: {
     time: string;
@@ -38,3 +43,14 @@ export const createChat = (chat: {
 export const updateChat = (id: number, chat: { time: string; message: string; sequence: number; is_answer: number }) =>
     api.put(`/chats/${id}`, chat);
 export const deleteChat = (id: number) => api.delete(`/chats/${id}`);
+
+// config
+export const getAllConfig = async () => {
+    const { data } = await api.get<ConfigEntity[]>(`/configs/all`);
+    return data;
+};
+
+export const updateConfigById = async (dto: updateConfigDto) => {
+    const { data } = await api.put(`/configs/${dto.id}`, dto);
+    return data;
+};

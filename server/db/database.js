@@ -39,7 +39,33 @@ db.serialize(() => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             openai_api_key TEXT
         );
-    `);
+    `, (err) => {
+        if (err) {
+            return;
+        }
+
+        // 테이블이 생성된 경우에만 삽입
+        const get_all_sql = `SELECT * FROM ${TABLE_CONFIG}`;
+        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key) VALUES (NULL);`;
+        db.all(get_all_sql, (err, rows) => {
+            if (err) {
+                console.error('Error checking rows', err);
+                return;
+            }
+
+            if (rows.length == 0) {
+                db.run(insert_default_sql, (err) => {
+                    if (err) {
+                        console.error('Error inserting data:', err);
+                    } else {
+                        console.log('Empty row inserted');
+                    }
+                });
+            } else {
+                console.log('default row exists, no row inserted.');
+            }
+        });
+    });
 });
 
 module.exports = {

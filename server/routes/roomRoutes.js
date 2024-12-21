@@ -23,17 +23,6 @@ router.get('/', (req, res) => {
     });
 });
 
-// 특정 Room에 속한 Chat 조회 (GET)
-router.get('/:room_id/chats', (req, res) => {
-    const { room_id } = req.params;
-    db.all(`SELECT * FROM ${TABLE_CHAT} WHERE room_id = ?`, [room_id], (err, rows) => {
-        if (err) {
-            return res.status(400).json({ error: err.message });
-        }
-        res.json(rows);
-    });
-});
-
 // Room 업데이트 (PUT)
 router.put('/:id', (req, res) => {
     const { name } = req.body;

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box, IconButton, InputAdornment, TextField } from "@mui/material";
-import { createChat, createChatDto, getChats } from "../api/api";
+import { createChat, createChatDto, getChatsbyRoomId } from "../api/api";
 import { ChatEntity } from "../interface/entity";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import OpenAI from "openai";
@@ -30,7 +30,7 @@ export const ChatComponent = () => {
     const { isPending, error, data, isSuccess } = useQuery<ChatEntity[]>({
         queryKey: ["chats", roomId],
         queryFn: async () => {
-            const data = await getChats(parseInt(safeRoomId));
+            const data = await getChatsbyRoomId(parseInt(safeRoomId));
             setChatData(data);
             return data;
         },
@@ -61,7 +61,7 @@ export const ChatComponent = () => {
     }, [msgHistory]);
 
     if (isPending) return <Box>'Loading...'</Box>;
-    if (error) return <Box>'An error has occurred: ' + error.message</Box>;
+    if (error) return <Box> {`An error has occurred: ${error.message}`}</Box>;
     return (
         <Box sx={{ width: "100%", display: "flex", flexDirection: "column", overflow: "auto", flexGrow: 1 }}>
             {data.map((v, i) => (
