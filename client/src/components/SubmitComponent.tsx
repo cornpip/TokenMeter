@@ -1,12 +1,13 @@
 import { Box, IconButton, InputAdornment, TextField } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createChat, createChatDto, createRoom } from "../api/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createChat, createChatDto, createRoom, getAllConfig } from "../api/api";
 import { useNavigate, useParams } from "react-router-dom";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
 import { useChatStore } from "../status/store";
 import OpenAI from "openai";
+import { ConfigEntity } from "../interface/entity";
 
 const getTitle = (msg: string): string => {
     const max_length: number = 15;
@@ -19,13 +20,32 @@ export const SubmitComponent = () => {
     let safeRoomId = roomId ?? "0";
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-
     const chatData = useChatStore((state) => state.chatData);
     const msgHistory = useChatStore((state) => state.msgHistory);
+    const [openai, setOpenai] = useState<OpenAI>();
 
-    const openai = new OpenAI({
-        apiKey: import.meta.env.VITE_OPENAI_KEY,
-        dangerouslyAllowBrowser: true,
+    const { isPending, error, data, isSuccess } = useQuery<ConfigEntity[]>({
+        queryKey: ["configs"],
+        queryFn: async () => {
+            const data = await getAllConfig();
+            if (data.length > 0) {
+                const apiKey = data[data.length - 1].openai_api_key;
+                if (apiKey) {
+                    setOpenai(
+                        () =>
+                            new OpenAI({
+                                apiKey,
+                                dangerouslyAllowBrowser: true,
+                            })
+                    );
+                } else {
+                    setOpenai(undefined);
+                }
+            } else {
+                setOpenai(undefined);
+            }
+            return data;
+        },
     });
 
     const createChatMutation = useMutation({
@@ -71,7 +91,7 @@ export const SubmitComponent = () => {
     };
 
     const handleSendMessage = async () => {
-        if (message.trim()) {
+        if (message.trim() && openai) {
             // 채팅 시작이면 방 만들고 navigate
             if (safeRoomId === "0") {
                 await createRoomMutation.mutateAsync(getTitle(message)).then((res) => {
@@ -99,35 +119,42 @@ export const SubmitComponent = () => {
                 sequence: n_seq,
             };
             createChatMutation.mutate(dto);
-            // 그럼 chatData는 mutate될 때마다 set이 되야하는거네? 일단 동기 맞추기 귀찮으니까 아래는 동기무관하게 작성
 
             /*
             openAi api
             답변 시간 걸림, 나중에 stream api 사용하기
             */
-            const completion = await openai.chat.completions.create({
-                messages: n_msgHistory,
-                model: "gpt-4o-mini",
-            });
+            try {
+                const completion = await openai.chat.completions.create({
+                    messages: n_msgHistory,
+                    model: "gpt-4o-mini",
+                });
 
-            const completionMsg = completion.choices[0].message;
-            if (completionMsg.content) {
-                n_msgHistory.push({ role: "system", content: completionMsg.content });
+                const completionMsg = completion.choices[0].message;
+                if (completionMsg.content) {
+                    n_msgHistory.push({ role: "system", content: completionMsg.content });
 
-                // 질문 응답(db)
-                const dto: createChatDto = {
-                    time: new Date().toISOString(),
-                    room_id: parseInt(safeRoomId),
-                    message: completionMsg.content,
-                    is_answer: 1,
-                    sequence: n_seq === 0 ? 1 : n_seq + 1,
-                };
-                createChatMutation.mutate(dto);
+                    // 질문 응답(db)
+                    const dto: createChatDto = {
+                        time: new Date().toISOString(),
+                        room_id: parseInt(safeRoomId),
+                        message: completionMsg.content,
+                        is_answer: 1,
+                        sequence: n_seq === 0 ? 1 : n_seq + 1,
+                    };
+                    createChatMutation.mutate(dto);
+                }
+                setMessage(""); // Clear the input after sending
+            } catch (error: any) {
+                alert(error);
             }
-            setMessage(""); // Clear the input after sending
+        } else if (!openai) {
+            alert("Please register the API key first");
         }
     };
 
+    if (isPending) return <Box>'Loading...'</Box>;
+    if (error) return <Box> {`An error has occurred: ${error.message}`}</Box>;
     return (
         <Box
             sx={{

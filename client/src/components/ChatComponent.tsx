@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, IconButton, InputAdornment, TextField } from "@mui/material";
-import { createChat, createChatDto, getChatsbyRoomId } from "../api/api";
+import { Box } from "@mui/material";
+import { getChatsbyRoomId } from "../api/api";
 import { ChatEntity } from "../interface/entity";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import OpenAI from "openai";
+import { useQuery } from "@tanstack/react-query";
 import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
 import { MessageBox } from "./MessageBox";
 import { useParams } from "react-router-dom";
@@ -55,7 +54,7 @@ export const ChatComponent = () => {
     // msgHistory가 업데이트될 때 스크롤을 가장 아래로 이동
     useEffect(() => {
         if (messagesEndRef.current) {
-            console.log("msggggggggggg", msgHistory.length, msgHistory);
+            // console.log("msggggggggggg", msgHistory.length, msgHistory);
             messagesEndRef.current.scrollIntoView({ behavior: "smooth" }); // 부드러운 스크롤
         }
     }, [msgHistory]);
