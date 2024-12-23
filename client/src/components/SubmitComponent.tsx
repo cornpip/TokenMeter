@@ -66,27 +66,10 @@ export const SubmitComponent = () => {
         },
     });
 
-    const handleKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Enter") {
-            const target = event.target as HTMLInputElement;
-            if (event.shiftKey) {
-                // Shift + Enter adds a new line
-                event.preventDefault();
-
-                const start = target.selectionStart || 0;
-                const end = target.selectionEnd || 0;
-                const newMessage = message.substring(0, start) + "\n" + message.substring(end);
-                setMessage(newMessage);
-
-                // Move the cursor to the position after the new line
-                requestAnimationFrame(() => {
-                    target.selectionStart = target.selectionEnd = start + 1;
-                });
-            } else {
-                // Enter sends the message (implement your send logic here)
-                event.preventDefault();
-                handleSendMessage();
-            }
+    const handleKeyDown = async (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            handleSendMessage();
         }
     };
 
@@ -170,7 +153,7 @@ export const SubmitComponent = () => {
             <TextField
                 fullWidth
                 multiline
-                maxRows={safeRoomId !== "0" ? 4 : 15}
+                maxRows={safeRoomId !== "0" ? 8 : 20}
                 placeholder="메시지 입력"
                 variant="outlined"
                 sx={{
@@ -180,9 +163,8 @@ export const SubmitComponent = () => {
                     },
                 }}
                 onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
                 value={message}
-                // onKeyDown={handleKeyDown}
+                onKeyDown={handleKeyDown}
                 slotProps={{
                     input: {
                         startAdornment: (

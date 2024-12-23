@@ -25,7 +25,33 @@ export const LeftComponent = () => {
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box>'An error has occurred: ' + error.message</Box>;
     return (
-        <Container sx={{ bgcolor: red[50], height: "100%", width: "100%", overflow: "scroll" }}>
+        <Container
+            sx={{
+                bgcolor: "#E7EBEF",
+                height: "100%",
+                width: "100%",
+                overflowY: "auto",
+                overflowX: "auto",
+                maxHeight: "100%",
+
+                // 스크롤바 스타일
+                "&::-webkit-scrollbar": {
+                    width: "8px", // 세로 스크롤바의 너비
+                },
+                "&::-webkit-scrollbar-track": {
+                    background: "#E7EBEF", // 스크롤바 배경 색상
+                },
+                "&::-webkit-scrollbar-thumb": {
+                    backgroundColor: "#888", // 스크롤바 색상
+                    borderRadius: "10px", // 둥글게 만들기
+                },
+                "&::-webkit-scrollbar-thumb:hover": {
+                    backgroundColor: "#555", // 마우스를 올렸을 때 색상 변화
+                },
+                scrollbarWidth: "thin",
+                scrollbarColor: "#888 #E7EBEF",
+            }}
+        >
             <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 {data.map((v, i) => (
                     <Box

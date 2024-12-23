@@ -62,7 +62,15 @@ export const ChatComponent = () => {
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box> {`An error has occurred: ${error.message}`}</Box>;
     return (
-        <Box sx={{ width: "100%", display: "flex", flexDirection: "column", overflow: "auto", flexGrow: 1 }}>
+        <Box
+            sx={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "auto",
+                flexGrow: 1,
+            }}
+        >
             {data.map((v, i) => (
                 <MessageBox key={i} v={v} />
             ))}

@@ -42,9 +42,12 @@ interface MessageBoxProps {
 }
 
 export const MessageBox = memo(({ v }: MessageBoxProps) => {
-    console.log("@@@ MessageBox");
+    // console.log("@@@ MessageBox");
 
     let leftOrRight: string = v.is_answer ? "flex-end" : "flex-start";
+
+    // Replace \n with space*2 + \n for rendering line breaks
+    const formattedMessage = v.message.replace(/\n/g, "  \n");
     return (
         <Box key={v.id} sx={{ display: "flex", direction: "row", justifyContent: leftOrRight }}>
             <Box
@@ -67,7 +70,7 @@ export const MessageBox = memo(({ v }: MessageBoxProps) => {
                     rehypePlugins={[rehypeRaw]}
                     components={renderers}
                 >
-                    {v.message}
+                    {formattedMessage}
                 </ReactMarkdown>
             </Box>
         </Box>

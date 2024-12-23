@@ -51,7 +51,6 @@ export const Config = () => {
         <Container
             maxWidth="lg"
             sx={{
-                bgcolor: blue[50],
                 width: "100vw",
                 height: "100vh",
                 display: "flex",

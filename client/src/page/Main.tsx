@@ -17,8 +17,14 @@ export const Main = () => {
 
     return (
         <Container
+            disableGutters
             maxWidth="xl"
-            sx={{ bgcolor: blue[50], width: "98vw", height: "98vh", paddingTop: 1, paddingBottom: 3 }}
+            sx={{
+                width: "98vw",
+                height: "98vh",
+                paddingTop: 1,
+                paddingBottom: 3,
+            }}
         >
             <Grid
                 container
