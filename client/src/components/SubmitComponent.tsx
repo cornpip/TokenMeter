@@ -110,7 +110,7 @@ export const SubmitComponent = () => {
             try {
                 const completion = await openai.chat.completions.create({
                     messages: n_msgHistory,
-                    model: "gpt-4o-mini",
+                    model: "gpt-4o",
                 });
 
                 const completionMsg = completion.choices[0].message;

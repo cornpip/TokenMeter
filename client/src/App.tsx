@@ -6,6 +6,7 @@ import { Chat } from "./page/Chat";
 import { Room } from "./page/Room";
 import { Manage } from "./page/Manage";
 import { Config } from "./page/Config";
+import { ImageTest } from "./page/ImageTest";
 
 export const App = () => {
     return (
@@ -19,6 +20,7 @@ export const App = () => {
                 <Route path="/chat/:roomId" element={<Chat />} />
                 <Route path="/room" element={<Room />} />
                 <Route path="/config" element={<Config />} />
+                <Route path="/image" element={<ImageTest />} />
                 <Route path="*" element={<Navigate to="/main" replace />} />
             </Routes>
         </BrowserRouter>
