@@ -14,16 +14,21 @@ export interface updateConfigDto {
     openai_api_key: string;
 }
 
-const api = axios.create({
+export const api = axios.create({
     baseURL: "http://localhost:4000",
 });
 
+// test에서 썼음
+export const getRoomsBefore = () => api.get("/rooms");
+
+export const getRoomById = async (id: string) => {
+    const { data } = await api.get(`/rooms/${id}`);
+    return data;
+};
 export const getRooms = async () => {
     const { data } = await api.get("/rooms");
     return data;
 };
-export const getRoomsBefore = () => api.get("/rooms");
-
 export const createRoom = (name: string) => api.post("/rooms", { name });
 export const updateRoom = (id: number, name: string) => api.put(`/rooms/${id}`, { name });
 export const deleteRoom = (id: number) => api.delete(`/rooms/${id}`);

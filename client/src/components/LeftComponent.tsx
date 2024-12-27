@@ -1,10 +1,11 @@
 import { Box, Container, IconButton, Menu, MenuItem, Typography } from "@mui/material";
-import { getRooms } from "../api/api";
+import { deleteRoom, getRooms, getRoomById } from "../api/api";
 import { RoomEntity } from "../interface/entity";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { RoomDeleteResDto } from "../interface/dto";
 
 // RoomItem 컴포넌트의 prop 타입 정의
 interface RoomItemProps {
@@ -81,15 +82,26 @@ export const LeftComponent = () => {
     const [hoveredItemId, setHoveredItemId] = useState<number | null>(null);
     const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null); //anchor
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null); //moreBtnSelected
+    const queryClient = useQueryClient();
     const safeRoomId = roomId ?? "0";
     const { isPending, error, data } = useQuery<RoomEntity[]>({
         queryKey: ["rooms"],
         queryFn: getRooms,
     });
 
+    const deleteRoomMutation = useMutation({
+        mutationFn: (id: number) => {
+            return deleteRoom(id);
+        },
+        onSuccess: (data, variables, context) => {
+            let d: RoomDeleteResDto = data.data;
+            queryClient.invalidateQueries({ queryKey: ["rooms"] });
+            queryClient.invalidateQueries({ queryKey: ["room", d.deletedId] });
+        },
+    });
+
     const handleRoomClick = (id: number) => {
         if (id !== selectedItemId) {
-            setSelectedItemId(id);
             navigate(`/main/${id}`);
         }
     };
@@ -112,14 +124,17 @@ export const LeftComponent = () => {
         setSelectedItemId(null);
     };
 
-    const handleOptionClick = (option: string) => {
-        // console.log(`${option} option selected for item with id: ${selectedItemId}`);
-        // handleMenuClose();
+    const handleDeleteOption = () => {
+        alert("Are you sure you want to delete this?");
+        if (selectedItemId) {
+            deleteRoomMutation.mutate(selectedItemId);
+        }
+        handleMenuClose();
     };
 
     useEffect(() => {
-        if (roomId) {
-            setSelectedItemId(parseInt(roomId));
+        if (safeRoomId) {
+            setSelectedItemId(parseInt(safeRoomId));
         }
     }, []);
 
@@ -181,7 +196,7 @@ export const LeftComponent = () => {
                         horizontal: "left",
                     }}
                 >
-                    <MenuItem onClick={() => handleOptionClick("Delete")}>Delete</MenuItem>
+                    <MenuItem onClick={() => handleDeleteOption()}>Delete</MenuItem>
                 </Menu>
             </Box>
         </Container>

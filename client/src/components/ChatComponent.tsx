@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box } from "@mui/material";
-import { getChatsbyRoomId } from "../api/api";
-import { ChatEntity } from "../interface/entity";
+import { api, getChatsbyRoomId, getRoomById } from "../api/api";
+import { ChatEntity, RoomEntity } from "../interface/entity";
 import { useQuery } from "@tanstack/react-query";
 import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
 import { MessageBox } from "./MessageBox";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useChatStore } from "../status/store";
+import axios from "axios";
 
 export const ChatComponent = () => {
     console.log("@@@ ChatComponent");
@@ -14,6 +15,7 @@ export const ChatComponent = () => {
      * useParams은 동기 hook임
      * 그리고 path parameter componet는 path parameter 바뀌면 re-render됨
      */
+    const navigate = useNavigate();
     const { roomId } = useParams<{ roomId: string }>();
     const safeRoomId = roomId ?? "0"; // 기본값 설정
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -21,6 +23,25 @@ export const ChatComponent = () => {
     const msgHistory = useChatStore((state) => state.msgHistory);
     const setChatData = useChatStore((state) => state.setChatData);
     const setMsgHistory = useChatStore((state) => state.setMsgHistory);
+
+    /**
+     * roomErr로 if(roomErr)navigate; 하는거 보다 axios err 핸들링으로 navigate하는게 부드러움
+     */
+    const { error: roomErr } = useQuery<RoomEntity>({
+        queryKey: ["room", safeRoomId],
+        queryFn: async () => {
+            try {
+                return await getRoomById(safeRoomId);
+            } catch (err) {
+                if (axios.isAxiosError(err) && err.response && err.response.status === 404) {
+                    console.log("room deleted");
+                }
+                navigate("/main");
+                return null;
+            }
+        },
+        retry: 2,
+    });
 
     /**
      * 분리하니까 함수 진행 파이프 라인을 작성자 아니면 모르겠는데?

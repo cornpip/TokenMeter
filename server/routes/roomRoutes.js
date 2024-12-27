@@ -23,6 +23,22 @@ router.get('/', (req, res) => {
     });
 });
 
+// 특정 Room 조회 (GET)  
+router.get('/:roomId', (req, res) => {
+    const roomId = req.params.roomId;
+    const query = `SELECT * FROM ${TABLE_ROOM} WHERE id = ?`;
+
+    db.get(query, [roomId], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (!row) {
+            return res.status(404).json({ error: 'Room not found' });
+        }
+        res.json(row);
+    });
+});
+
 // Room 업데이트 (PUT)
 router.put('/:id', (req, res) => {
     const { name } = req.body;
@@ -42,7 +58,7 @@ router.delete('/:id', (req, res) => {
         if (err) {
             return res.status(400).json({ error: err.message });
         }
-        res.json({ deletedID: id });
+        res.json({ deletedId: id });
     });
 });
 

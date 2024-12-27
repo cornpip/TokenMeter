@@ -73,6 +73,11 @@ export const SubmitComponent = () => {
         }
     };
 
+    const handleClickSend = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        handleSendMessage();
+    };
+
     const handleSendMessage = async () => {
         if (message.trim() && openai) {
             // 채팅 시작이면 방 만들고 navigate
@@ -133,6 +138,7 @@ export const SubmitComponent = () => {
             }
         } else if (!openai) {
             alert("Please register the API key first");
+            navigate("/config");
         }
     };
 
@@ -176,7 +182,7 @@ export const SubmitComponent = () => {
                         ),
                         endAdornment: (
                             <InputAdornment position="end">
-                                <IconButton onClick={() => {}}>
+                                <IconButton onClick={handleClickSend}>
                                     <SendIcon />
                                 </IconButton>
                             </InputAdornment>

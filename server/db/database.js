@@ -6,6 +6,15 @@ const db = new sqlite3.Database(path.resolve(__dirname, '../database.db'), (err)
         console.error(err.message);
     } else {
         console.log('Connected to the database.');
+
+        // 외래 키 기능/제약 활성화  
+        db.run('PRAGMA foreign_keys = ON;', (err) => {
+            if (err) {
+                console.error("Error enabling foreign keys:", err.message);
+            } else {
+                console.log("Foreign keys are enabled.");
+            }
+        });
     }
 });
 
@@ -22,6 +31,7 @@ db.serialize(() => {
         );
     `);
 
+    // 외래키 제약 사항 안먹음
     db.run(`
         CREATE TABLE IF NOT EXISTS ${TABLE_CHAT} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
