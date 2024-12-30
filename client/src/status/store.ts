@@ -1,6 +1,5 @@
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
 import { ChatEntity } from "../interface/entity";
 
 // 상태의 타입을 정의
@@ -13,23 +12,25 @@ interface NowChatState {
 }
 
 // zustand를 사용하여 상태 관리 스토어 생성
-export const useChatStore = create<NowChatState>()(
-    devtools(
-        persist(
-            (set) => ({
-                msgHistory: [],
-                chatData: [],
+export const useChatStore = create<NowChatState>((set) => ({
+    msgHistory: [],
+    chatData: [],
 
-                setMsgHistory: (msgHistory: ChatCompletionMessageParam[]) => set({ msgHistory }),
-                setChatData: (chatData: ChatEntity[]) => set({ chatData }),
-            }),
-            {
-                name: "chatId-storage",
-            }
-        )
-    )
-);
+    setMsgHistory: (msgHistory: ChatCompletionMessageParam[]) => set({ msgHistory }),
+    setChatData: (chatData: ChatEntity[]) => set({ chatData }),
+}));
 
+interface LeftCompOpenStore {
+    isOpen: boolean;
+    setIsOpen: (flag: boolean) => void;
+}
+
+export const useLeftCompOpenStore = create<LeftCompOpenStore>((set) => ({
+    isOpen: true,
+    setIsOpen: (flag: boolean) => set({ isOpen: flag }),
+}));
+
+// deprecated
 interface ApiKeyStore {
     apiKey: string;
     setApiKey: (key: string) => void;

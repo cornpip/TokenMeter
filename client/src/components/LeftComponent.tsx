@@ -1,11 +1,15 @@
 import { Box, Container, IconButton, Menu, MenuItem, Typography } from "@mui/material";
-import { deleteRoom, getRooms, getRoomById } from "../api/api";
+import { deleteRoom, getRooms } from "../api/api";
 import { RoomEntity } from "../interface/entity";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { RoomDeleteResDto } from "../interface/dto";
+import EditIcon from "@mui/icons-material/Edit";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { useLeftCompOpenStore } from "../status/store";
 
 // RoomItem 컴포넌트의 prop 타입 정의
 interface RoomItemProps {
@@ -82,6 +86,9 @@ export const LeftComponent = () => {
     const [hoveredItemId, setHoveredItemId] = useState<number | null>(null);
     const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null); //anchor
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null); //moreBtnSelected
+    const isOpen = useLeftCompOpenStore((state) => state.isOpen);
+    const setIsOpen = useLeftCompOpenStore((state) => state.setIsOpen);
+
     const queryClient = useQueryClient();
     const safeRoomId = roomId ?? "0";
     const { isPending, error, data } = useQuery<RoomEntity[]>({
@@ -102,6 +109,7 @@ export const LeftComponent = () => {
 
     const handleRoomClick = (id: number) => {
         if (id !== selectedItemId) {
+            setSelectedItemId(id);
             navigate(`/main/${id}`);
         }
     };
@@ -132,6 +140,15 @@ export const LeftComponent = () => {
         handleMenuClose();
     };
 
+    const handleOpenToggle = () => {
+        setIsOpen(!isOpen);
+    };
+
+    const handleNewChat = () => {
+        setSelectedItemId(null);
+        navigate("/main");
+    };
+
     useEffect(() => {
         if (safeRoomId) {
             setSelectedItemId(parseInt(safeRoomId));
@@ -142,14 +159,15 @@ export const LeftComponent = () => {
     if (error) return <Box>'An error has occurred: ' + error.message</Box>;
     return (
         <Container
+            disableGutters={true}
             sx={{
+                padding: 1,
                 bgcolor: "#E7EBEF",
                 height: "100%",
                 width: "100%",
                 overflowY: "auto",
                 overflowX: "auto",
                 maxHeight: "100%",
-
                 // 스크롤바 스타일
                 "&::-webkit-scrollbar": {
                     width: "8px", // 세로 스크롤바의 너비
@@ -168,6 +186,26 @@ export const LeftComponent = () => {
                 scrollbarColor: "#888 #E7EBEF",
             }}
         >
+            <Box
+                sx={{
+                    padding: 1,
+                    color: "black",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    borderBottom: "1px solid #ccc",
+                }}
+            >
+                <IconButton edge="start" color="inherit" onClick={handleOpenToggle}>
+                    {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+                </IconButton>
+                <Box>
+                    <IconButton color="inherit">
+                        <EditIcon onClick={handleNewChat} />
+                    </IconButton>
+                </Box>
+            </Box>
+
             <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 {data.map((v, i) => (
                     <RoomItem

@@ -6,13 +6,27 @@ import { useNavigate, useParams } from "react-router-dom";
 import { SubmitComponent } from "../components/SubmitComponent";
 import { ChatComponent } from "../components/ChatComponent";
 import ConfigIcon from "@mui/icons-material/Settings";
+import { useLeftCompOpenStore } from "../status/store";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import EditIcon from "@mui/icons-material/Edit";
 
 export const Main = () => {
     const { roomId } = useParams<{ roomId: string }>();
+    const isOpen = useLeftCompOpenStore((state) => state.isOpen);
+    const setIsOpen = useLeftCompOpenStore((state) => state.setIsOpen);
     const navigate = useNavigate();
 
     const configClickHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
         navigate("/config");
+    };
+
+    const handleOpenToggle = () => {
+        setIsOpen(!isOpen);
+    };
+
+    const handleNewChat = () => {
+        navigate("/main");
     };
 
     return (
@@ -23,7 +37,7 @@ export const Main = () => {
                 width: "98vw",
                 height: "98vh",
                 paddingTop: 1,
-                paddingBottom: 3,
+                paddingBottom: 2,
             }}
         >
             <Grid
@@ -35,9 +49,6 @@ export const Main = () => {
                     position: "relative",
                 }}
             >
-                <Grid size={{ xs: 3 }} sx={{ height: "100%" }}>
-                    <LeftComponent />
-                </Grid>
                 <Box
                     sx={{
                         position: "absolute",
@@ -58,26 +69,75 @@ export const Main = () => {
                         <ConfigIcon />
                     </IconButton>
                 </Box>
-                <Grid size={{ xs: 9 }} sx={{ height: "100%" }}>
-                    <Box
-                        sx={{
-                            height: "100%",
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: roomId ? "space-between" : "center",
-                            alignItems: "center",
-                        }}
-                    >
-                        {roomId ? (
-                            <ChatComponent />
-                        ) : (
-                            <Typography variant="h3" sx={{ marginBottom: 3 }}>
-                                {"Start Local ChatGPT"}
-                            </Typography>
-                        )}
-                        <SubmitComponent />
-                    </Box>
-                </Grid>
+                {isOpen ? (
+                    <>
+                        <Grid size={{ xs: 3 }} sx={{ height: "100%", transition: "width 0.3s" }}>
+                            <LeftComponent />
+                        </Grid>
+                        <Grid size={{ xs: 9 }} sx={{ height: "100%" }}>
+                            <Box
+                                sx={{
+                                    height: "100%",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: roomId ? "space-between" : "center",
+                                    alignItems: "center",
+                                }}
+                            >
+                                {roomId ? (
+                                    <ChatComponent />
+                                ) : (
+                                    <Typography variant="h3" sx={{ marginBottom: 3 }}>
+                                        {"Start Local ChatGPT"}
+                                    </Typography>
+                                )}
+                                <SubmitComponent />
+                            </Box>
+                        </Grid>
+                    </>
+                ) : (
+                    <>
+                        <Grid size={{ xs: 1 }}>
+                            <Box
+                                sx={{
+                                    padding: 1,
+                                    color: "black",
+                                    display: "flex",
+                                    alignItems: "center",
+                                }}
+                            >
+                                <IconButton edge="start" color="inherit" onClick={handleOpenToggle}>
+                                    {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+                                </IconButton>
+                                <Box>
+                                    <IconButton color="inherit">
+                                        <EditIcon onClick={handleNewChat} />
+                                    </IconButton>
+                                </Box>
+                            </Box>
+                        </Grid>
+                        <Grid size={{ xs: 11 }} sx={{ height: "100%" }}>
+                            <Box
+                                sx={{
+                                    height: "100%",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    justifyContent: roomId ? "space-between" : "center",
+                                    alignItems: "center",
+                                }}
+                            >
+                                {roomId ? (
+                                    <ChatComponent />
+                                ) : (
+                                    <Typography variant="h3" sx={{ marginBottom: 3 }}>
+                                        {"Start Local ChatGPT"}
+                                    </Typography>
+                                )}
+                                <SubmitComponent />
+                            </Box>
+                        </Grid>
+                    </>
+                )}
             </Grid>
         </Container>
     );

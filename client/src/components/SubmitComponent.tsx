@@ -80,15 +80,20 @@ export const SubmitComponent = () => {
 
     const handleSendMessage = async () => {
         if (message.trim() && openai) {
-            // 채팅 시작이면 방 만들고 navigate
+            let n_msgHistory = [...msgHistory];
+
+            /**
+             * 채팅 시작이면 초기화 -> 방 만들고 -> navigate
+             * setMsgHistory timming = when "chats" usequery running
+             * 귀찮으니까 앞에서는 그냥 비우고 뒤에서 맞도록
+             */
             if (safeRoomId === "0") {
+                n_msgHistory = [];
                 await createRoomMutation.mutateAsync(getTitle(message)).then((res) => {
                     safeRoomId = res.data.id;
                     navigate(`./${safeRoomId}`);
                 });
             }
-
-            const n_msgHistory = [...msgHistory];
             n_msgHistory.push({ role: "user", content: message });
 
             /**

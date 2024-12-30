@@ -63,7 +63,6 @@ export const ChatComponent = () => {
      */
     useEffect(() => {
         if (isSuccess) {
-            console.log("## MsgHistory useEffect");
             const msgArr: ChatCompletionMessageParam[] = [];
             data.map((v) => {
                 msgArr.push({ role: v.is_answer === 1 ? "system" : "user", content: v.message });
@@ -75,7 +74,6 @@ export const ChatComponent = () => {
     // msgHistory가 업데이트될 때 스크롤을 가장 아래로 이동
     useEffect(() => {
         if (messagesEndRef.current) {
-            // console.log("msggggggggggg", msgHistory.length, msgHistory);
             messagesEndRef.current.scrollIntoView({ behavior: "smooth" }); // 부드러운 스크롤
         }
     }, [msgHistory]);
