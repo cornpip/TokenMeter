@@ -83,6 +83,7 @@ export const SubmitComponent = () => {
         id: -1,
         openai_api_key: "",
         selected_model: "",
+        max_message: -1,
     });
     const [openai, setOpenai] = useState<OpenAI>();
 

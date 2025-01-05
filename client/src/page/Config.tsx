@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Autocomplete, Box, Button, Container, TextField, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, Container, Slider, TextField, Typography } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConfigEntity } from "../interface/entity";
 import { getAllConfig, updateConfigById, updateConfigDto } from "../api/api";
@@ -14,12 +14,18 @@ const models = [
 ];
 
 export const Config = () => {
-    const [inputApiKey, setInputApiKey] = useState<string>("");
-    const [isEditable, setIsEditable] = useState<boolean>(true);
+    const [isEditable, setIsEditable] = useState<boolean>(false);
     const [config, setConfig] = useState<ConfigEntity>({
         id: -1,
         openai_api_key: "",
         selected_model: "",
+        max_message: -1,
+    });
+    const [n_config, n_setConfig] = useState<ConfigEntity>({
+        id: -1,
+        openai_api_key: "",
+        selected_model: "",
+        max_message: -1,
     });
     const queryClient = useQueryClient();
 
@@ -31,9 +37,9 @@ export const Config = () => {
                 const apiKey = data[data.length - 1].openai_api_key;
                 if (apiKey) {
                     setIsEditable(false);
-                    setInputApiKey(apiKey);
                 }
                 setConfig(data[data.length - 1]);
+                n_setConfig(data[data.length - 1]);
             }
             return data;
         },
@@ -51,11 +57,16 @@ export const Config = () => {
 
     const handleRegistration = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (data) {
-            const dto: updateConfigDto = {
-                id: data[data.length - 1].id,
-                openai_api_key: inputApiKey,
-            };
-            updateConfigMutation.mutate(dto);
+            updateConfigMutation.mutate(n_config);
+        }
+    };
+
+    const handleNumberInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const count = Number(event.target.value);
+        if (!isNaN(count)) {
+            n_setConfig((v) => {
+                return { ...v, max_message: count };
+            });
         }
     };
 
@@ -78,7 +89,7 @@ export const Config = () => {
                     flexDirection: "column",
                     gap: 2,
                     marginTop: 5,
-                    width: "50%",
+                    width: "80%",
                 }}
             >
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
@@ -88,41 +99,37 @@ export const Config = () => {
                         margin="normal"
                         variant="standard"
                         onChange={(e) => {
-                            setInputApiKey(e.target.value);
+                            n_setConfig((v) => {
+                                return { ...v, openai_api_key: e.target.value };
+                            });
                         }}
                         disabled={!isEditable}
-                        value={isEditable ? inputApiKey : "*".repeat(inputApiKey.length)}
+                        value={
+                            isEditable
+                                ? n_config.openai_api_key
+                                : n_config.openai_api_key
+                                  ? "*".repeat(n_config.openai_api_key.length)
+                                  : "-"
+                        }
                         required
                     />
-                    {isEditable ? (
-                        <Button
-                            variant="contained"
-                            onClick={handleRegistration}
-                            sx={{ marginLeft: 2, marginY: 1, textTransform: "none", height: "50%" }}
-                        >
-                            registration
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="contained"
-                            onClick={() => {
-                                setIsEditable(true);
-                            }}
-                            sx={{ marginLeft: 2, marginY: 1, textTransform: "none", height: "50%" }}
-                        >
-                            correction
-                        </Button>
-                    )}
                 </Box>
                 <Autocomplete
                     freeSolo
                     options={models}
-                    value={config.selected_model}
+                    value={n_config.selected_model}
                     onChange={(event, value) => {
                         if (value) {
-                            let n_config: ConfigEntity = { ...config, selected_model: value };
-                            updateConfigMutation.mutate(n_config);
+                            n_setConfig((v) => {
+                                return { ...v, selected_model: value };
+                            });
                         }
+                    }}
+                    onInputChange={(event, value) => {
+                        // 사용자가 TextField에 직접 입력했을 때 처리
+                        n_setConfig((v) => {
+                            return { ...v, selected_model: value };
+                        });
                     }}
                     renderInput={(params) => (
                         <TextField
@@ -133,8 +140,66 @@ export const Config = () => {
                             disabled={!isEditable}
                         />
                     )}
+                    disabled={!isEditable}
                 />
-                {/* <Typography> {"Config2 Setting"} </Typography> */}
+                <Box>
+                    <TextField
+                        type="number"
+                        label="maximum message count"
+                        variant="standard"
+                        margin="normal"
+                        value={n_config.max_message}
+                        onChange={handleNumberInputChange}
+                        sx={{ width: "100%", marginBottom: 2 }}
+                        disabled={!isEditable}
+                    />
+                </Box>
+                <Box
+                    sx={{
+                        display: "flex",
+                        gap: 1,
+                    }}
+                >
+                    {isEditable ? (
+                        <Button
+                            variant="contained"
+                            onClick={handleRegistration}
+                            color="secondary"
+                            sx={{
+                                textTransform: "none",
+                                flex: 1,
+                            }}
+                        >
+                            registration
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                setIsEditable(true);
+                            }}
+                            sx={{
+                                textTransform: "none",
+                                flex: 1,
+                            }}
+                        >
+                            correction
+                        </Button>
+                    )}
+                    <Button
+                        variant="contained"
+                        onClick={() => {
+                            setIsEditable(false);
+                            n_setConfig(config);
+                        }}
+                        sx={{
+                            textTransform: "none",
+                            flex: 1,
+                        }}
+                    >
+                        cancel
+                    </Button>
+                </Box>
             </Box>
         </Container>
     );

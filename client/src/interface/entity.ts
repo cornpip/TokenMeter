@@ -16,4 +16,5 @@ export interface ConfigEntity {
     id: number;
     openai_api_key: string;
     selected_model: string;
+    max_message: number;
 }
