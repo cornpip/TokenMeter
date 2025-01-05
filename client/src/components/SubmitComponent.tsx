@@ -8,6 +8,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { useChatStore } from "../status/store";
 import OpenAI from "openai";
 import { ConfigEntity } from "../interface/entity";
+import { ChatCompletionContentPart } from "openai/resources/index.mjs";
 
 const getTitle = (msg: string): string => {
     const max_length: number = 15;
@@ -83,7 +84,6 @@ export const SubmitComponent = () => {
         openai_api_key: "",
         selected_model: "",
     });
-
     const [openai, setOpenai] = useState<OpenAI>();
 
     const { isPending, error, data, isSuccess } = useQuery<ConfigEntity[]>({
@@ -149,7 +149,7 @@ export const SubmitComponent = () => {
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (!event.target.files) return;
-        console.log(files);
+        // console.log(files);
 
         const fileArray = Array.from(event.target.files);
 
@@ -198,7 +198,20 @@ export const SubmitComponent = () => {
                     navigate(`./${safeRoomId}`);
                 });
             }
-            n_msgHistory.push({ role: "user", content: message });
+
+            if (files.length > 0) {
+                const n_content: ChatCompletionContentPart[] = [];
+                n_content.push({ type: "text", text: message });
+
+                files.forEach((v, i) => {
+                    n_content.push({ type: "image_url", image_url: { url: v.base64 } });
+                });
+
+                n_msgHistory.push({ role: "user", content: n_content });
+                setFiles([]);
+            } else {
+                n_msgHistory.push({ role: "user", content: message });
+            }
 
             /**
              * length - msgHistory 지표로도 가능할 듯, 근데 어차피 chatData render에 사용하니까
