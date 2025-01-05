@@ -42,18 +42,40 @@ router.post('/', (req, res) => {
 router.put('/:id', (req, res) => {
     const { id } = req.params;
     const { openai_api_key } = req.body;
+    const { selected_model } = req.body;
 
-    db.run(
-        `UPDATE ${TABLE_CONFIG} SET openai_api_key = ? WHERE id = ?`,
-        [openai_api_key, id],
-        function (err) {
+    // 동적으로 업데이트할 컬럼과 값 구성
+    const updates = [];
+    const values = [];
+
+    if (openai_api_key !== undefined) {
+        updates.push('openai_api_key = ?');
+        values.push(openai_api_key);
+    }
+
+    if (selected_model !== undefined) {
+        updates.push('selected_model = ?');
+        values.push(selected_model);
+    }
+
+    if (updates.length === 0) {
+        return res.json({ message: 'API key updated successfully', id: id });
+    }
+
+    // ID를 바인딩 값으로 추가
+    values.push(id);
+    // 동적으로 SQL 쿼리 생성
+    const sql = `UPDATE ${TABLE_CONFIG} SET ${updates.join(', ')} WHERE id = ?`;
+
+    db.run(sql, values,
+        function (err, row) {
             if (err) {
                 return res.status(400).json({ error: err.message });
             }
             if (this.changes === 0) {
                 return res.status(404).json({ error: 'Record not found' });
             }
-            res.json({ message: 'API key updated successfully', id });
+            res.json({ message: 'API key updated successfully', id: id });
         }
     );
 });

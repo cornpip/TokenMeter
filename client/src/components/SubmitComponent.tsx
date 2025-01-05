@@ -22,6 +22,12 @@ export const SubmitComponent = () => {
     const navigate = useNavigate();
     const chatData = useChatStore((state) => state.chatData);
     const msgHistory = useChatStore((state) => state.msgHistory);
+    const [config, setConfig] = useState<ConfigEntity>({
+        id: -1,
+        openai_api_key: "",
+        selected_model: "",
+    });
+
     const [openai, setOpenai] = useState<OpenAI>();
 
     const { isPending, error, data, isSuccess } = useQuery<ConfigEntity[]>({
@@ -41,6 +47,7 @@ export const SubmitComponent = () => {
                 } else {
                     setOpenai(undefined);
                 }
+                setConfig(data[data.length - 1]);
             } else {
                 setOpenai(undefined);
             }
@@ -120,7 +127,7 @@ export const SubmitComponent = () => {
             try {
                 const completion = await openai.chat.completions.create({
                     messages: n_msgHistory,
-                    model: "gpt-4o",
+                    model: config.selected_model,
                 });
 
                 const completionMsg = completion.choices[0].message;

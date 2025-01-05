@@ -11,7 +11,8 @@ export interface createChatDto {
 
 export interface updateConfigDto {
     id: number;
-    openai_api_key: string;
+    openai_api_key?: string;
+    selected_model?: string;
 }
 
 export const api = axios.create({

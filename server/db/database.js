@@ -47,7 +47,8 @@ db.serialize(() => {
     db.run(`
         CREATE TABLE IF NOT EXISTS ${TABLE_CONFIG} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            openai_api_key TEXT
+            openai_api_key TEXT,
+            selected_model TEXT
         );
     `, (err) => {
         if (err) {
@@ -56,7 +57,7 @@ db.serialize(() => {
 
         // 테이블이 생성된 경우에만 삽입
         const get_all_sql = `SELECT * FROM ${TABLE_CONFIG}`;
-        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key) VALUES (NULL);`;
+        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key, selected_model) VALUES (NULL, 'chatgpt-4o-latest');`;
         db.all(get_all_sql, (err, rows) => {
             if (err) {
                 console.error('Error checking rows', err);

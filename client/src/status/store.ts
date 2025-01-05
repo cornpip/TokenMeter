@@ -1,6 +1,6 @@
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { create } from "zustand";
-import { ChatEntity } from "../interface/entity";
+import { ChatEntity, ConfigEntity } from "../interface/entity";
 
 // 상태의 타입을 정의
 interface NowChatState {
@@ -29,6 +29,16 @@ export const useLeftCompOpenStore = create<LeftCompOpenStore>((set) => ({
     isOpen: true,
     setIsOpen: (flag: boolean) => set({ isOpen: flag }),
 }));
+
+// interface ConfigStore {
+//     configEntity: ConfigEntity;
+//     setConfigEntity: (c: ConfigEntity) => void;
+// }
+
+// export const useConfigStore = create<ConfigStore>((set) => ({
+//     configEntity: { id: 0, openai_api_key: "", selected_model: "" },
+//     setConfigEntity: (c: ConfigEntity) => set({ configEntity: c }),
+// }));
 
 // deprecated
 interface ApiKeyStore {

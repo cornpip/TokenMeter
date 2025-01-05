@@ -1,13 +1,26 @@
 import React, { useState } from "react";
-import { Box, Button, Container, TextField, Typography } from "@mui/material";
-import { blue } from "@mui/material/colors";
+import { Autocomplete, Box, Button, Container, TextField, Typography } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConfigEntity } from "../interface/entity";
 import { getAllConfig, updateConfigById, updateConfigDto } from "../api/api";
 
+const models = [
+    "You can use models that are not in the list",
+    "chatgpt-4o-latest",
+    "gpt-4o-mini",
+    // "o1",
+    // "o1-mini",
+    // "o1-preview", //o1은 주고 받는 api형식이 다른 듯
+];
+
 export const Config = () => {
     const [inputApiKey, setInputApiKey] = useState<string>("");
     const [isEditable, setIsEditable] = useState<boolean>(true);
+    const [config, setConfig] = useState<ConfigEntity>({
+        id: -1,
+        openai_api_key: "",
+        selected_model: "",
+    });
     const queryClient = useQueryClient();
 
     const { isPending, error, data, isSuccess } = useQuery<ConfigEntity[]>({
@@ -20,6 +33,7 @@ export const Config = () => {
                     setIsEditable(false);
                     setInputApiKey(apiKey);
                 }
+                setConfig(data[data.length - 1]);
             }
             return data;
         },
@@ -100,6 +114,26 @@ export const Config = () => {
                         </Button>
                     )}
                 </Box>
+                <Autocomplete
+                    freeSolo
+                    options={models}
+                    value={config.selected_model}
+                    onChange={(event, value) => {
+                        if (value) {
+                            let n_config: ConfigEntity = { ...config, selected_model: value };
+                            updateConfigMutation.mutate(n_config);
+                        }
+                    }}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="Model"
+                            variant="standard"
+                            margin="normal"
+                            disabled={!isEditable}
+                        />
+                    )}
+                />
                 {/* <Typography> {"Config2 Setting"} </Typography> */}
             </Box>
         </Container>
