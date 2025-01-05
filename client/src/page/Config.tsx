@@ -64,9 +64,15 @@ export const Config = () => {
     const handleNumberInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const count = Number(event.target.value);
         if (!isNaN(count)) {
-            n_setConfig((v) => {
-                return { ...v, max_message: count };
-            });
+            if (count < 1) {
+                n_setConfig((v) => {
+                    return { ...v, max_message: 1 };
+                });
+            } else {
+                n_setConfig((v) => {
+                    return { ...v, max_message: count };
+                });
+            }
         }
     };
 

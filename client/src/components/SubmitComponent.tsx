@@ -9,6 +9,7 @@ import { useChatStore } from "../status/store";
 import OpenAI from "openai";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCompletionContentPart } from "openai/resources/index.mjs";
+import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
 
 const getTitle = (msg: string): string => {
     const max_length: number = 15;
@@ -185,7 +186,11 @@ export const SubmitComponent = () => {
 
     const handleSendMessage = async () => {
         if (message.trim() && openai) {
-            let n_msgHistory = [...msgHistory];
+            let n_msgHistory: ChatCompletionMessageParam[] = [];
+            // 보내는 거 포함해서 maximum_message_count
+            if (config.max_message > 1) {
+                n_msgHistory = [...msgHistory.slice(-1 * (config.max_message - 1))];
+            }
 
             /**
              * 채팅 시작이면 초기화 -> 방 만들고 -> navigate
