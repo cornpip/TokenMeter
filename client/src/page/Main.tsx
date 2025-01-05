@@ -110,8 +110,8 @@ export const Main = () => {
                                     {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                                 </IconButton>
                                 <Box>
-                                    <IconButton color="inherit">
-                                        <EditIcon onClick={handleNewChat} />
+                                    <IconButton color="inherit" onClick={handleNewChat}>
+                                        <EditIcon />
                                     </IconButton>
                                 </Box>
                             </Box>

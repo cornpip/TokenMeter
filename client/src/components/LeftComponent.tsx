@@ -200,8 +200,8 @@ export const LeftComponent = () => {
                     {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                 </IconButton>
                 <Box>
-                    <IconButton color="inherit">
-                        <EditIcon onClick={handleNewChat} />
+                    <IconButton color="inherit" onClick={handleNewChat}>
+                        <EditIcon />
                     </IconButton>
                 </Box>
             </Box>

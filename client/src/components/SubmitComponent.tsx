@@ -1,4 +1,4 @@
-import { Box, IconButton, InputAdornment, TextField } from "@mui/material";
+import { Alert, Box, IconButton, InputAdornment, Snackbar, styled, TextField } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createChat, createChatDto, createRoom, getAllConfig } from "../api/api";
@@ -14,8 +14,64 @@ const getTitle = (msg: string): string => {
     return msg.length > max_length ? msg.slice(0, max_length) : msg;
 };
 
+interface UploadedFile {
+    id: number;
+    name: string;
+    preview: string;
+    base64: string;
+}
+
+const ImagePreviewList = styled(Box)({
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+    position: "absolute",
+    top: "-90px", // TextField 위의 공간에 배치
+    width: "100%",
+    zIndex: 1,
+});
+
+const ImagePreviewItem = styled(Box)({
+    position: "relative",
+    width: "70px",
+    height: "70px",
+    borderRadius: "8px",
+    overflow: "hidden",
+    backgroundColor: "#f0f0f0",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+});
+
+const RemoveButton = styled("button")({
+    position: "absolute",
+    top: "5px",
+    right: "5px",
+    width: "20px",
+    height: "20px",
+    borderRadius: "50%",
+    border: "none",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    color: "white",
+    fontSize: "12px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    "&:hover": {
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+    },
+});
+
+const ImagePreview = styled("img")({
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+});
+
 export const SubmitComponent = () => {
     const [message, setMessage] = useState("");
+    const [files, setFiles] = useState<UploadedFile[]>([]);
+    const [alertOpen, setAlertOpen] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
     const { roomId } = useParams<{ roomId: string }>();
     let safeRoomId = roomId ?? "0";
     const queryClient = useQueryClient();
@@ -83,6 +139,47 @@ export const SubmitComponent = () => {
     const handleClickSend = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         handleSendMessage();
+    };
+
+    const handleAttachFileClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click(); // 숨겨진 input[type="file"] 호출
+        }
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!event.target.files) return;
+        console.log(files);
+
+        const fileArray = Array.from(event.target.files);
+
+        fileArray.forEach((file, index) => {
+            if (!file.type.startsWith("image/")) {
+                setAlertOpen(true);
+                return;
+            }
+            const reader = new FileReader();
+
+            reader.onload = () => {
+                if (reader.result) {
+                    const base64 = reader.result.toString();
+                    const newFile: UploadedFile = {
+                        id: files.length + index,
+                        name: file.name,
+                        preview: URL.createObjectURL(file),
+                        base64: base64,
+                    };
+
+                    setFiles((prevFiles) => [...prevFiles, newFile]);
+                }
+            };
+
+            reader.readAsDataURL(file); // 파일 Base64 변환
+        });
+    };
+
+    const handleRemoveFile = (id: number) => {
+        setFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
     };
 
     const handleSendMessage = async () => {
@@ -159,6 +256,7 @@ export const SubmitComponent = () => {
     return (
         <Box
             sx={{
+                position: "relative",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "flex-end",
@@ -168,6 +266,16 @@ export const SubmitComponent = () => {
                 backgroundColor: "white",
             }}
         >
+            {files.length > 0 && (
+                <ImagePreviewList>
+                    {files.map((file) => (
+                        <ImagePreviewItem key={file.id}>
+                            <ImagePreview src={file.preview} alt={file.name} />
+                            <RemoveButton onClick={() => handleRemoveFile(file.id)}>×</RemoveButton>
+                        </ImagePreviewItem>
+                    ))}
+                </ImagePreviewList>
+            )}
             <TextField
                 fullWidth
                 multiline
@@ -187,9 +295,17 @@ export const SubmitComponent = () => {
                     input: {
                         startAdornment: (
                             <InputAdornment position="start">
-                                <IconButton>
+                                <IconButton onClick={handleAttachFileClick}>
                                     <AttachFileIcon />
                                 </IconButton>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    style={{ display: "none" }}
+                                    accept="image/*" // 이미지 형식만 허용
+                                    multiple // 다중 파일 업로드 가능
+                                    onChange={handleFileChange}
+                                />
                             </InputAdornment>
                         ),
                         endAdornment: (
@@ -206,6 +322,11 @@ export const SubmitComponent = () => {
                     },
                 }}
             />
+            <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
+                <Alert severity="error" onClose={() => setAlertOpen(false)}>
+                    Unsupported file format. Please upload only images
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };
