@@ -7,6 +7,10 @@ import { getAllConfig, updateConfigById, updateConfigDto } from "../api/api";
 const models = [
     "You can use models that are not in the list",
     "chatgpt-4o-latest",
+    "gpt-4o-2024-11-20",
+    "gpt-4o-2024-08-06",
+    "gpt-4o",
+    "gpt-4o-mini-2024-07-18",
     "gpt-4o-mini",
     // "o1",
     // "o1-mini",
@@ -115,7 +119,7 @@ export const Config = () => {
                                 ? n_config.openai_api_key
                                 : n_config.openai_api_key
                                   ? "*".repeat(n_config.openai_api_key.length)
-                                  : "-"
+                                  : ""
                         }
                         required
                     />

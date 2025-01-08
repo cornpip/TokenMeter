@@ -1,7 +1,7 @@
 import { Alert, Box, IconButton, InputAdornment, Snackbar, styled, TextField } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createChat, createChatDto, createRoom, getAllConfig } from "../api/api";
+import { createChat, createRoom, getAllConfig, updateChat } from "../api/api";
 import { useNavigate, useParams } from "react-router-dom";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
@@ -10,6 +10,7 @@ import OpenAI from "openai";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCompletionContentPart } from "openai/resources/index.mjs";
 import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
+import { ChatCreateDto, ChatUpdateDto } from "../interface/dto";
 
 const getTitle = (msg: string): string => {
     const max_length: number = 15;
@@ -114,8 +115,17 @@ export const SubmitComponent = () => {
     });
 
     const createChatMutation = useMutation({
-        mutationFn: (dto: createChatDto) => {
+        mutationFn: (dto: ChatCreateDto) => {
             return createChat(dto);
+        },
+        onSuccess: (data, variables, context) => {
+            queryClient.invalidateQueries({ queryKey: ["chats", safeRoomId] });
+        },
+    });
+
+    const updateChatMutation = useMutation({
+        mutationFn: (dto: ChatUpdateDto) => {
+            return updateChat(dto);
         },
         onSuccess: (data, variables, context) => {
             queryClient.invalidateQueries({ queryKey: ["chats", safeRoomId] });
@@ -227,14 +237,16 @@ export const SubmitComponent = () => {
              */
             const n_seq = chatData.length ? chatData[chatData.length - 1].sequence + 1 : 0;
             // 질문 요청(db)
-            const dto: createChatDto = {
+            const db_question: ChatCreateDto = {
                 time: new Date().toISOString(),
                 room_id: parseInt(safeRoomId),
                 message: message,
                 is_answer: 0,
                 sequence: n_seq,
+                used_model: config.selected_model,
+                msg_history: JSON.stringify(n_msgHistory),
             };
-            createChatMutation.mutate(dto);
+            const db_question_res_data: { id: number } = (await createChatMutation.mutateAsync(db_question)).data;
 
             /*
             openAi api
@@ -245,20 +257,35 @@ export const SubmitComponent = () => {
                     messages: n_msgHistory,
                     model: config.selected_model,
                 });
+                console.log(completion);
 
                 const completionMsg = completion.choices[0].message;
                 if (completionMsg.content) {
                     n_msgHistory.push({ role: "system", content: completionMsg.content });
 
                     // 질문 응답(db)
-                    const dto: createChatDto = {
+                    const db_answer: ChatCreateDto = {
                         time: new Date().toISOString(),
                         room_id: parseInt(safeRoomId),
                         message: completionMsg.content,
                         is_answer: 1,
                         sequence: n_seq === 0 ? 1 : n_seq + 1,
+                        used_model: config.selected_model,
+                        msg_history: JSON.stringify(n_msgHistory),
+                        token_meter_prompt: completion.usage?.prompt_tokens,
+                        token_meter_completion: completion.usage?.completion_tokens,
+                        token_meter_total: completion.usage?.total_tokens,
                     };
-                    createChatMutation.mutate(dto);
+                    createChatMutation.mutate(db_answer);
+
+                    if (db_question_res_data.id) {
+                        updateChatMutation.mutate({
+                            chatId: db_question_res_data.id,
+                            token_meter_prompt: completion.usage?.prompt_tokens,
+                            token_meter_completion: completion.usage?.completion_tokens,
+                            token_meter_total: completion.usage?.total_tokens,
+                        });
+                    }
                 }
                 setMessage(""); // Clear the input after sending
             } catch (error: any) {

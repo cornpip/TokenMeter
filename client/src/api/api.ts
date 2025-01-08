@@ -1,13 +1,6 @@
 import axios from "axios";
 import { ConfigEntity } from "../interface/entity";
-
-export interface createChatDto {
-    time: string;
-    sequence: number;
-    message: string;
-    is_answer: number;
-    room_id: number;
-}
+import { ChatCreateDto, ChatUpdateDto } from "../interface/dto";
 
 export interface updateConfigDto {
     id: number;
@@ -39,15 +32,8 @@ export const getChatsbyRoomId = async (roomId: number | undefined) => {
     return data;
 };
 
-export const createChat = (chat: {
-    time: string;
-    message: string;
-    sequence: number;
-    is_answer: number;
-    room_id: number;
-}) => api.post("/chats", chat);
-export const updateChat = (id: number, chat: { time: string; message: string; sequence: number; is_answer: number }) =>
-    api.put(`/chats/${id}`, chat);
+export const createChat = (chat: ChatCreateDto) => api.post("/chats", chat);
+export const updateChat = (dto: ChatUpdateDto) => api.put(`/chats/${dto.chatId}`, dto);
 export const deleteChat = (id: number) => api.delete(`/chats/${id}`);
 
 // config

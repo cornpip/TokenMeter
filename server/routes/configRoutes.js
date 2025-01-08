@@ -41,9 +41,10 @@ router.post('/', (req, res) => {
 // put
 router.put('/:id', (req, res) => {
     const { id } = req.params;
-    const { openai_api_key } = req.body;
-    const { selected_model } = req.body;
-    const { max_message } = req.body;
+    const { openai_api_key,
+        selected_model,
+        max_message
+    } = req.body;
 
     // 동적으로 업데이트할 컬럼과 값 구성
     const updates = [];

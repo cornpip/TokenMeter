@@ -40,6 +40,11 @@ db.serialize(() => {
             sequence INTEGER NOT NULL,
             is_answer INTEGER NOT NULL DEFAULT 0 CHECK(is_answer IN (0, 1)),
             room_id INTEGER NOT NULL,            
+            msg_history TEXT,
+            token_meter_prompt INTEGER,
+            token_meter_completion INTEGER,
+            token_meter_total INTEGER,
+            used_model TEXT,
             FOREIGN KEY (room_id) REFERENCES ${TABLE_ROOM}(id) ON DELETE CASCADE 
         );
     `);
@@ -58,7 +63,7 @@ db.serialize(() => {
 
         // 테이블이 생성된 경우에만 삽입
         const get_all_sql = `SELECT * FROM ${TABLE_CONFIG}`;
-        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key, selected_model, max_message) VALUES (NULL, 'chatgpt-4o-latest', 20);`;
+        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key, selected_model, max_message) VALUES (NULL, 'gpt-4o-2024-11-20', 6);`;
         db.all(get_all_sql, (err, rows) => {
             if (err) {
                 console.error('Error checking rows', err);
