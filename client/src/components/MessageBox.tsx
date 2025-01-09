@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, TextField, Typography } from "@mui/material";
 import React, { memo } from "react";
 import { ChatEntity } from "../interface/entity";
 import ReactMarkdown from "react-markdown";
@@ -8,6 +8,26 @@ import rehypeRaw from "rehype-raw";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { github } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import "github-markdown-css";
+
+interface TokenMeterProps {
+    meter: number;
+}
+
+const TokenMeter: React.FC<TokenMeterProps> = ({ meter }) => {
+    return (
+        <Box
+            sx={{
+                // bgcolor: "#f0f0f0",
+                display: "flex",
+                alignItems: "flex-end",
+                margin: "10px 0px",
+                fontWeight: "bold",
+            }}
+        >
+            <Typography variant="body2">{meter}</Typography>
+        </Box>
+    );
+};
 
 const CodeBlock: React.FC<any> = ({ node, inline, className, children, ...props }) => {
     const match = /language-(\w+)/.exec(className || "");
@@ -49,7 +69,15 @@ export const MessageBox = memo(({ v }: MessageBoxProps) => {
     // Replace \n with space*2 + \n for rendering line breaks
     const formattedMessage = v.message.replace(/\n/g, "  \n");
     return (
-        <Box key={v.id} sx={{ display: "flex", direction: "row", justifyContent: leftOrRight }}>
+        <Box
+            key={v.id}
+            sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: leftOrRight,
+            }}
+        >
+            {v.is_answer == 1 && <TokenMeter meter={v.token_meter_completion} />}
             <Box
                 className="markdown-body"
                 sx={{
@@ -73,6 +101,7 @@ export const MessageBox = memo(({ v }: MessageBoxProps) => {
                     {formattedMessage}
                 </ReactMarkdown>
             </Box>
+            {v.is_answer == 0 && <TokenMeter meter={v.token_meter_prompt} />}
         </Box>
     );
 });

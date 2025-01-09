@@ -257,7 +257,7 @@ export const SubmitComponent = () => {
                     messages: n_msgHistory,
                     model: config.selected_model,
                 });
-                console.log(completion);
+                // console.log(completion);
 
                 const completionMsg = completion.choices[0].message;
                 if (completionMsg.content) {

@@ -31,7 +31,6 @@ export const getChatsbyRoomId = async (roomId: number | undefined) => {
     const { data } = await api.get(`/chats/room/${roomId}`);
     return data;
 };
-
 export const createChat = (chat: ChatCreateDto) => api.post("/chats", chat);
 export const updateChat = (dto: ChatUpdateDto) => api.put(`/chats/${dto.chatId}`, dto);
 export const deleteChat = (id: number) => api.delete(`/chats/${id}`);

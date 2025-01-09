@@ -10,6 +10,11 @@ export interface ChatEntity {
     sequence: number;
     is_answer: number;
     room_id: number;
+    msg_hisory: string;
+    token_meter_prompt: number;
+    token_meter_completion: number;
+    token_meter_total: number;
+    used_model: string;
 }
 
 export interface ConfigEntity {
