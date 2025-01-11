@@ -8,6 +8,7 @@ import { MessageBox } from "./MessageBox";
 import { useNavigate, useParams } from "react-router-dom";
 import { useChatStore } from "../status/store";
 import axios from "axios";
+import { TokenMeterModal } from "../modal/TokenMeterModal";
 
 export const ChatComponent = () => {
     console.log("@@@ ChatComponent");
@@ -94,6 +95,8 @@ export const ChatComponent = () => {
                 <MessageBox key={i} v={v} />
             ))}
             <Box ref={messagesEndRef}></Box>
+            {/* modal */}
+            <TokenMeterModal />
         </Box>
     );
 };

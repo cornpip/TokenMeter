@@ -155,7 +155,7 @@ export const Config = () => {
                 <Box>
                     <TextField
                         type="number"
-                        label="maximum message count"
+                        label="maximum send message count"
                         variant="standard"
                         margin="normal"
                         value={n_config.max_message}

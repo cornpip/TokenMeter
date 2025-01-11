@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, TextField, Typography } from "@mui/material";
 import React, { memo } from "react";
 import { ChatEntity } from "../interface/entity";
 import ReactMarkdown from "react-markdown";
@@ -8,6 +8,35 @@ import rehypeRaw from "rehype-raw";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { github } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import "github-markdown-css";
+import { useTokenMeterModalStore } from "../status/store";
+
+interface TokenMeterProps {
+    v: ChatEntity;
+}
+const TokenMeter: React.FC<TokenMeterProps> = ({ v }) => {
+    const isOpen = useTokenMeterModalStore((s) => s.open);
+    const setIsOpen = useTokenMeterModalStore((s) => s.setOpen);
+    const clickHandler = () => {
+        setIsOpen(true, v);
+    };
+    return (
+        <Box
+            onClick={clickHandler}
+            sx={{
+                // bgcolor: "#f0f0f0",
+                display: "flex",
+                alignItems: "flex-end",
+                margin: "10px 0px",
+                fontWeight: "bold",
+                cursor: "pointer",
+            }}
+        >
+            <Typography variant="body2">
+                {v.is_answer == 1 ? v.token_meter_completion : v.token_meter_prompt}
+            </Typography>
+        </Box>
+    );
+};
 
 const CodeBlock: React.FC<any> = ({ node, inline, className, children, ...props }) => {
     const match = /language-(\w+)/.exec(className || "");
@@ -42,14 +71,20 @@ interface MessageBoxProps {
 }
 
 export const MessageBox = memo(({ v }: MessageBoxProps) => {
-    // console.log("@@@ MessageBox");
-
     let leftOrRight: string = v.is_answer ? "flex-end" : "flex-start";
 
     // Replace \n with space*2 + \n for rendering line breaks
     const formattedMessage = v.message.replace(/\n/g, "  \n");
     return (
-        <Box key={v.id} sx={{ display: "flex", direction: "row", justifyContent: leftOrRight }}>
+        <Box
+            key={v.id}
+            sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: leftOrRight,
+            }}
+        >
+            {v.is_answer == 1 && <TokenMeter v={v} />}
             <Box
                 className="markdown-body"
                 sx={{
@@ -73,6 +108,7 @@ export const MessageBox = memo(({ v }: MessageBoxProps) => {
                     {formattedMessage}
                 </ReactMarkdown>
             </Box>
+            {v.is_answer == 0 && <TokenMeter v={v} />}
         </Box>
     );
 });

@@ -30,15 +30,18 @@ export const useLeftCompOpenStore = create<LeftCompOpenStore>((set) => ({
     setIsOpen: (flag: boolean) => set({ isOpen: flag }),
 }));
 
-// interface ConfigStore {
-//     configEntity: ConfigEntity;
-//     setConfigEntity: (c: ConfigEntity) => void;
-// }
+//modal
+interface TokenMeterModalStore {
+    open: boolean;
+    content?: ChatEntity;
+    setOpen: (isOpen: boolean, content?: ChatEntity) => void;
+}
 
-// export const useConfigStore = create<ConfigStore>((set) => ({
-//     configEntity: { id: 0, openai_api_key: "", selected_model: "" },
-//     setConfigEntity: (c: ConfigEntity) => set({ configEntity: c }),
-// }));
+export const useTokenMeterModalStore = create<TokenMeterModalStore>((set) => ({
+    open: false,
+    content: undefined,
+    setOpen: (isOpen: boolean, content?: ChatEntity) => set({ open: isOpen, content }),
+}));
 
 // deprecated
 interface ApiKeyStore {

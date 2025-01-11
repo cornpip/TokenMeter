@@ -244,7 +244,6 @@ export const SubmitComponent = () => {
                 is_answer: 0,
                 sequence: n_seq,
                 used_model: config.selected_model,
-                msg_history: JSON.stringify(n_msgHistory),
             };
             const db_question_res_data: { id: number } = (await createChatMutation.mutateAsync(db_question)).data;
 
@@ -257,7 +256,7 @@ export const SubmitComponent = () => {
                     messages: n_msgHistory,
                     model: config.selected_model,
                 });
-                console.log(completion);
+                // console.log(completion);
 
                 const completionMsg = completion.choices[0].message;
                 if (completionMsg.content) {
@@ -271,7 +270,7 @@ export const SubmitComponent = () => {
                         is_answer: 1,
                         sequence: n_seq === 0 ? 1 : n_seq + 1,
                         used_model: config.selected_model,
-                        msg_history: JSON.stringify(n_msgHistory),
+                        msg_history: JSON.stringify(n_msgHistory, null, 4),
                         token_meter_prompt: completion.usage?.prompt_tokens,
                         token_meter_completion: completion.usage?.completion_tokens,
                         token_meter_total: completion.usage?.total_tokens,
@@ -281,6 +280,7 @@ export const SubmitComponent = () => {
                     if (db_question_res_data.id) {
                         updateChatMutation.mutate({
                             chatId: db_question_res_data.id,
+                            msg_history: JSON.stringify(n_msgHistory, null, 4),
                             token_meter_prompt: completion.usage?.prompt_tokens,
                             token_meter_completion: completion.usage?.completion_tokens,
                             token_meter_total: completion.usage?.total_tokens,
