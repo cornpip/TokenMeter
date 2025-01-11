@@ -38,6 +38,26 @@ const TokenMeter: React.FC<TokenMeterProps> = ({ v }) => {
     );
 };
 
+interface TokenMeterProps {
+    meter: number;
+}
+
+const TokenMeter: React.FC<TokenMeterProps> = ({ meter }) => {
+    return (
+        <Box
+            sx={{
+                // bgcolor: "#f0f0f0",
+                display: "flex",
+                alignItems: "flex-end",
+                margin: "10px 0px",
+                fontWeight: "bold",
+            }}
+        >
+            <Typography variant="body2">{meter}</Typography>
+        </Box>
+    );
+};
+
 const CodeBlock: React.FC<any> = ({ node, inline, className, children, ...props }) => {
     const match = /language-(\w+)/.exec(className || "");
     return !inline && match ? (
