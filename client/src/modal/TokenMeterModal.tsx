@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Modal, Box, Typography, Button } from "@mui/material";
 import { useTokenMeterModalStore } from "../status/store";
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import { WhereToVote } from "@mui/icons-material";
 
 export const TokenMeterModal: React.FC = () => {
     const isOpen = useTokenMeterModalStore((s) => s.open);
@@ -57,7 +56,7 @@ export const TokenMeterModal: React.FC = () => {
                     <Typography variant="body1" component="h2">
                         {`Used Token: ${content?.token_meter_total}`}
                     </Typography>
-                    <Typography variant="body2" component="body">
+                    <Typography variant="body2" component="span">
                         {`${content?.token_meter_prompt}(prompt) + ${content?.token_meter_completion}(completion)`}
                     </Typography>
                 </Box>
@@ -71,7 +70,7 @@ export const TokenMeterModal: React.FC = () => {
                     <Typography variant="body1" component="h2">
                         {`Used History: ${msgHistory.length}`}
                     </Typography>
-                    <Typography variant="body2" component="body">
+                    <Typography variant="body2" component="span">
                         {`${msgHistory.length - 1}(prompt) + 1(completion)`}
                     </Typography>
                 </Box>
