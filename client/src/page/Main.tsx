@@ -10,6 +10,7 @@ import { useLeftCompOpenStore } from "../status/store";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditIcon from "@mui/icons-material/Edit";
+import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 
 export const Main = () => {
     const { roomId } = useParams<{ roomId: string }>();
@@ -110,6 +111,14 @@ export const Main = () => {
                                     {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                                 </IconButton>
                                 <Box>
+                                    <IconButton
+                                        color="inherit"
+                                        onClick={() => {
+                                            navigate("/image");
+                                        }}
+                                    >
+                                        <InsertPhotoIcon />
+                                    </IconButton>
                                     <IconButton color="inherit" onClick={handleNewChat}>
                                         <EditIcon />
                                     </IconButton>
