@@ -10,6 +10,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useLeftCompOpenStore } from "../status/store";
+import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 
 // RoomItem 컴포넌트의 prop 타입 정의
 interface RoomItemProps {
@@ -200,6 +201,14 @@ export const LeftComponent = () => {
                     {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                 </IconButton>
                 <Box>
+                    <IconButton
+                        color="inherit"
+                        onClick={() => {
+                            navigate("/image");
+                        }}
+                    >
+                        <InsertPhotoIcon />
+                    </IconButton>
                     <IconButton color="inherit" onClick={handleNewChat}>
                         <EditIcon />
                     </IconButton>
