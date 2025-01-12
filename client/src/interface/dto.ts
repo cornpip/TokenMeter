@@ -1,3 +1,9 @@
+export interface ConfigUpdateDto {
+    id: number;
+    openai_api_key?: string;
+    selected_model?: string;
+}
+
 export interface RoomDeleteResDto {
     deletedId: number;
 }

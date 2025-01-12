@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Autocomplete, Box, Button, Container, Slider, TextField, Typography } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConfigEntity } from "../interface/entity";
-import { getAllConfig, updateConfigById, updateConfigDto } from "../api/api";
+import { getAllConfig, updateConfigById } from "../api/api";
+import { ConfigUpdateDto } from "../interface/dto";
 
 const models = [
     "You can use models that are not in the list",
@@ -50,7 +51,7 @@ export const Config = () => {
     });
 
     const updateConfigMutation = useMutation({
-        mutationFn: (dto: updateConfigDto) => {
+        mutationFn: (dto: ConfigUpdateDto) => {
             return updateConfigById(dto);
         },
         onSuccess: (data, variable, context) => {

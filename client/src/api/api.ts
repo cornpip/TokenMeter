@@ -1,19 +1,10 @@
 import axios from "axios";
 import { ConfigEntity } from "../interface/entity";
-import { ChatCreateDto, ChatUpdateDto } from "../interface/dto";
-
-export interface updateConfigDto {
-    id: number;
-    openai_api_key?: string;
-    selected_model?: string;
-}
+import { ChatCreateDto, ChatUpdateDto, ConfigUpdateDto } from "../interface/dto";
 
 export const api = axios.create({
     baseURL: "http://localhost:4000",
 });
-
-// test에서 썼음
-export const getRoomsBefore = () => api.get("/rooms");
 
 export const getRoomById = async (id: string) => {
     const { data } = await api.get(`/rooms/${id}`);
@@ -41,7 +32,7 @@ export const getAllConfig = async () => {
     return data;
 };
 
-export const updateConfigById = async (dto: updateConfigDto) => {
+export const updateConfigById = async (dto: ConfigUpdateDto) => {
     const { data } = await api.put(`/configs/${dto.id}`, dto);
     return data;
 };
