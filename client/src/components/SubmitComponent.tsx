@@ -215,6 +215,10 @@ export const SubmitComponent = () => {
                 });
             }
 
+            // temp: image input chat
+            let imageInput: boolean = false;
+            let fileHistory: ChatCompletionMessageParam | null = null;
+
             if (files.length > 0) {
                 const n_content: ChatCompletionContentPart[] = [];
                 n_content.push({ type: "text", text: message });
@@ -222,9 +226,13 @@ export const SubmitComponent = () => {
                 files.forEach((v, i) => {
                     n_content.push({ type: "image_url", image_url: { url: v.base64 } });
                 });
-
                 n_msgHistory.push({ role: "user", content: n_content });
                 setFiles([]);
+
+                // temp: image input chat
+                imageInput = true;
+                fileHistory = { role: "user", content: message };
+                
             } else {
                 n_msgHistory.push({ role: "user", content: message });
             }
@@ -256,8 +264,17 @@ export const SubmitComponent = () => {
                     messages: n_msgHistory,
                     model: config.selected_model,
                 });
-                // console.log(completion);
-
+                
+                /*
+                temp: image input chat
+                일단 이미지 첨부 경우, db에 별도 저장 없음
+                추후에 별도 포인트 잡으면: 저장, TokenMeter Modal 수정 필요
+                */
+                if (imageInput && fileHistory) {
+                    n_msgHistory.pop();
+                    n_msgHistory.push(fileHistory);
+                }
+                
                 const completionMsg = completion.choices[0].message;
                 if (completionMsg.content) {
                     n_msgHistory.push({ role: "system", content: completionMsg.content });
