@@ -72,6 +72,8 @@ const ImagePreview = styled("img")({
 
 export const SubmitComponent = () => {
     const [message, setMessage] = useState("");
+    const [isDragOver, setIsDragOver] = useState(false);
+    const [textFieldOff, setTextFieldOff] = useState<boolean>(false);
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [alertOpen, setAlertOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -159,19 +161,13 @@ export const SubmitComponent = () => {
         }
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files) return;
-        // console.log(files);
-
-        const fileArray = Array.from(event.target.files);
-
+    const _setFileArray = (fileArray: File[]) => {
         fileArray.forEach((file, index) => {
             if (!file.type.startsWith("image/")) {
                 setAlertOpen(true);
                 return;
             }
             const reader = new FileReader();
-
             reader.onload = () => {
                 if (reader.result) {
                     const base64 = reader.result.toString();
@@ -190,8 +186,59 @@ export const SubmitComponent = () => {
         });
     };
 
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!event.target.files) return;
+        // console.log(files);
+
+        const fileArray = Array.from(event.target.files);
+        _setFileArray(fileArray);
+    };
+
+    const handleDropFileUpload = (droppedFiles: FileList) => {
+        if (!droppedFiles || droppedFiles.length === 0) return;
+
+        // FileList를 배열로 변환
+        const fileArray = Array.from(droppedFiles);
+        _setFileArray(fileArray);
+    };
+
     const handleRemoveFile = (id: number) => {
         setFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
+    };
+
+    // 드래그 시작: 드래그 UI 활성화
+    const handleDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsDragOver(true);
+    };
+
+    // 드래그 중: 기본 동작 방지 & 드롭존 유지
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsDragOver(true);
+    };
+
+    // 드래그 종료: UI 초기화
+    const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsDragOver(false);
+    };
+
+    // 드래그 앤 드롭 파일 처리
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsDragOver(false); // 드롭 후 상태 초기화
+
+        const droppedFiles = event.dataTransfer.files;
+        if (droppedFiles && droppedFiles.length > 0) {
+            // console.log(droppedFiles);
+            handleDropFileUpload(droppedFiles); // 파일 처리 함수 실행
+            event.dataTransfer.clearData();
+        }
     };
 
     const handleSendMessage = async () => {
@@ -232,7 +279,6 @@ export const SubmitComponent = () => {
                 // temp: image input chat
                 imageInput = true;
                 fileHistory = { role: "user", content: message };
-                
             } else {
                 n_msgHistory.push({ role: "user", content: message });
             }
@@ -260,11 +306,14 @@ export const SubmitComponent = () => {
             답변 시간 걸림, 나중에 stream api 사용하기
             */
             try {
+                setTextFieldOff(true);
                 const completion = await openai.chat.completions.create({
                     messages: n_msgHistory,
                     model: config.selected_model,
                 });
-                
+                setTextFieldOff(false);
+                setMessage(""); // Clear the input after sending
+
                 /*
                 temp: image input chat
                 일단 이미지 첨부 경우, db에 별도 저장 없음
@@ -274,7 +323,7 @@ export const SubmitComponent = () => {
                     n_msgHistory.pop();
                     n_msgHistory.push(fileHistory);
                 }
-                
+
                 const completionMsg = completion.choices[0].message;
                 if (completionMsg.content) {
                     n_msgHistory.push({ role: "system", content: completionMsg.content });
@@ -304,7 +353,6 @@ export const SubmitComponent = () => {
                         });
                     }
                 }
-                setMessage(""); // Clear the input after sending
             } catch (error: any) {
                 alert(error);
             }
@@ -326,8 +374,14 @@ export const SubmitComponent = () => {
                 alignItems: "center",
                 width: "100%",
                 borderRadius: "20px",
-                backgroundColor: "white",
+                backgroundColor: isDragOver ? "#e0f7fa" : "white",
+                border: isDragOver ? "2px dashed #03a9f4" : "2px solid transparent",
+                transition: "border-color 0.2s, background-color 0.2s",
             }}
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
         >
             {files.length > 0 && (
                 <ImagePreviewList>
@@ -342,6 +396,7 @@ export const SubmitComponent = () => {
             <TextField
                 fullWidth
                 multiline
+                disabled={textFieldOff}
                 maxRows={safeRoomId !== "0" ? 8 : 20}
                 placeholder="메시지 입력"
                 variant="outlined"
