@@ -63,7 +63,7 @@ db.serialize(() => {
 
         // 테이블이 생성된 경우에만 삽입
         const get_all_sql = `SELECT * FROM ${TABLE_CONFIG}`;
-        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key, selected_model, max_message) VALUES (NULL, 'gpt-4o-2024-11-20', 6);`;
+        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key, selected_model, max_message) VALUES (NULL, 'gpt-4o-2024-11-20', 3);`;
         db.all(get_all_sql, (err, rows) => {
             if (err) {
                 console.error('Error checking rows', err);
