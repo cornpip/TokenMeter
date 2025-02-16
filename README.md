@@ -1,6 +1,6 @@
-# TokenMetered
+# TokenMeter
 
-로컬에서 OpenAI API를 사용하여 데이터를 기록합니다. (파일 업로드, 이미지 생성 가능)
+로컬에서 OpenAI API를 사용하여 데이터를 기록하고 토큰량을 측정합니다.
 
 ## 서비스 장점
 
