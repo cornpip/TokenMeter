@@ -1,14 +1,18 @@
 import { Box, TextField, Typography } from "@mui/material";
-import React, { memo } from "react";
-import { ChatEntity } from "../interface/entity";
+import React, { memo, StrictMode } from "react";
+import { ChatEntity } from "../../interface/entity";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
+import rehypeKatex from "rehype-katex"; // LaTeX 수식 렌더링 플러그인
+import remarkMath from "remark-math"; // LaTeX 문법을 위한 플러그인
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { github } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import "github-markdown-css";
-import { useTokenMeterModalStore } from "../status/store";
+import { useTokenMeterModalStore } from "../../status/store";
+import "katex/dist/katex.min.css";
+import "./KatexCustom.css";
 
 interface TokenMeterProps {
     v: ChatEntity;
@@ -70,11 +74,28 @@ interface MessageBoxProps {
     v: ChatEntity;
 }
 
+const processForSyntax = (text: string) => {
+    return text
+        .replace(/\n/g, " \n")
+        .replace(/\\\\\[/g, "$$$$") // Replace '\\[' with '$$'
+        .replace(/\\\\\]/g, "$$$$") // Replace '\\]' with '$$'
+        .replace(/\\\\\(/g, "$$$$") // Replace '\\(' with '$$'
+        .replace(/\\\\\)/g, "$$$$") // Replace '\\)' with '$$'
+        .replace(/\\\[/g, "$$$$") // Replace '\[' with '$$'
+        .replace(/\\\]/g, "$$$$") // Replace '\]' with '$$'
+        .replace(/\\\(/g, "$$$$") // Replace '\(' with '$$'
+        .replace(/\\\)/g, "$$$$"); // Replace '\)' with '$$';
+};
+
+/**
+ * LaTeX-incompatible input = 수식안에 한글 있으면 warn 에러 있음
+ * strict: false로 처리
+ */
 export const MessageBox = memo(({ v }: MessageBoxProps) => {
     let leftOrRight: string = v.is_answer ? "flex-end" : "flex-start";
 
-    // Replace \n with space*2 + \n for rendering line breaks
-    const formattedMessage = v.message.replace(/\n/g, "  \n");
+    let formattedMessage = processForSyntax(v.message);
+    // console.log(formattedMessage);
     return (
         <Box
             key={v.id}
@@ -101,8 +122,8 @@ export const MessageBox = memo(({ v }: MessageBoxProps) => {
                 }}
             >
                 <ReactMarkdown
-                    remarkPlugins={[remarkGfm, rehypeHighlight]}
-                    rehypePlugins={[rehypeRaw]}
+                    remarkPlugins={[remarkGfm, rehypeHighlight, remarkMath]}
+                    rehypePlugins={[[rehypeKatex, { strict: false }], rehypeRaw]}
                     components={renderers}
                 >
                     {formattedMessage}

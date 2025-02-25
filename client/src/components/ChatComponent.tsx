@@ -4,7 +4,7 @@ import { api, getChatsbyRoomId, getRoomById } from "../api/api";
 import { ChatEntity, RoomEntity } from "../interface/entity";
 import { useQuery } from "@tanstack/react-query";
 import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
-import { MessageBox } from "./MessageBox";
+import { MessageBox } from "./message_box/MessageBox";
 import { useNavigate, useParams } from "react-router-dom";
 import { useChatStore } from "../status/store";
 import axios from "axios";
