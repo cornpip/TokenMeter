@@ -1,5 +1,5 @@
-import { Box, TextField, Typography } from "@mui/material";
-import React, { memo, StrictMode } from "react";
+import { Box, Button, TextField, Typography } from "@mui/material";
+import React, { memo, StrictMode, useState } from "react";
 import { ChatEntity } from "../../interface/entity";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -13,6 +13,8 @@ import "github-markdown-css";
 import { useTokenMeterModalStore } from "../../status/store";
 import "katex/dist/katex.min.css";
 import "./KatexCustom.css";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import CheckIcon from "@mui/icons-material/Check";
 
 interface TokenMeterProps {
     v: ChatEntity;
@@ -43,22 +45,79 @@ const TokenMeter: React.FC<TokenMeterProps> = ({ v }) => {
 };
 
 const CodeBlock: React.FC<any> = ({ node, inline, className, children, ...props }) => {
+    const [copied, setCopied] = useState(false);
     const match = /language-(\w+)/.exec(className || "");
+    const codeString = String(children).replace(/\n$/, "");
+    const language = match ? match[1] : "txt";
+
+    const copyToClipboard = async () => {
+        try {
+            await navigator.clipboard.writeText(codeString);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000); // 2초 후 복사 상태 초기화
+        } catch (err) {
+            console.error("Copy failed", err);
+        }
+    };
+
     return !inline && match ? (
-        <SyntaxHighlighter
-            language={match[1]}
-            PreTag="div"
-            {...props}
-            style={github}
-            customStyle={{
-                margin: "0",
-                padding: "0",
-                background: "inherit",
-                backgroundColor: "inherit",
-            }}
-        >
-            {String(children).replace(/\n$/, "")}
-        </SyntaxHighlighter>
+        <Box style={{ position: "relative", background: "#f6f8fa" }}>
+            {/* language & copy btn */}
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    paddingBottom: 1,
+                }}
+            >
+                <Typography
+                    variant="caption"
+                    sx={{
+                        color: "primary.main",
+                        fontSize: "1em",
+                        userSelect: "none", // drag X
+                    }}
+                >
+                    {language}
+                </Typography>
+                <Button
+                    onClick={copyToClipboard}
+                    variant="text"
+                    size="small"
+                    startIcon={copied ? <CheckIcon /> : <ContentCopyIcon />}
+                    sx={{
+                        display: "flex",
+                        textTransform: "none",
+                        color: copied ? "success.main" : "gray",
+                        borderColor: copied ? "success.main" : "gray",
+                        "&:hover": {
+                            borderColor: copied ? "success.dark" : "black",
+                            backgroundColor: "transparent",
+                        },
+                        fontSize: "1em",
+                    }}
+                >
+                    {copied ? "Copied" : "Copy"}
+                </Button>
+            </Box>
+
+            {/* Code block */}
+            <SyntaxHighlighter
+                language={match[1]}
+                PreTag="div"
+                {...props}
+                style={github}
+                customStyle={{
+                    margin: "0",
+                    padding: "0",
+                    background: "inherit",
+                    backgroundColor: "inherit",
+                }}
+            >
+                {codeString}
+            </SyntaxHighlighter>
+        </Box>
     ) : (
         <code className={className} {...props}>
             {children}
