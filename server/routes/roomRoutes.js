@@ -47,7 +47,7 @@ router.put('/:id', (req, res) => {
         if (err) {
             return res.status(400).json({ error: err.message });
         }
-        res.json({ updatedID: id });
+        res.json({ updatedId: id });
     });
 });
 

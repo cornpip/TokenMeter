@@ -1,11 +1,11 @@
-import { Box, Container, IconButton, Menu, MenuItem, Typography } from "@mui/material";
-import { deleteRoom, getRooms } from "../api/api";
+import { Box, Container, IconButton, Menu, MenuItem, TextField, Typography } from "@mui/material";
+import { deleteRoom, getRooms, updateRoom } from "../api/api";
 import { RoomEntity } from "../interface/entity";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { RoomDeleteResDto } from "../interface/dto";
+import { RoomDeleteResDto, RoomUpdateResDto } from "../interface/dto";
 import EditIcon from "@mui/icons-material/Edit";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -17,23 +17,29 @@ interface RoomItemProps {
     roomData: RoomEntity; // 각 방의 데이터
     selectedItemId: number | null; // 선택된 항목의 ID
     hoveredItemId: number | null; // 현재 호버 중인 항목의 ID
+    isEditableTitleId: number | null;
     safeRoomId: string; // 안전 룸의 ID (스트링인 이유: component에서 string을 사용하고 있기 때문)
     onMouseEnter: () => void; // 마우스 엔터 핸들러
     onMouseLeave: () => void; // 마우스 리브 핸들러
     onClick: () => void; // 클릭 핸들러
     onIconButtonClick: (event: React.MouseEvent<HTMLButtonElement>, id: number) => void; // 아이콘 버튼 클릭 핸들러
+    onBlurHandler: (renamed: string) => Promise<void>;
 }
 
 const RoomItem: React.FC<RoomItemProps> = ({
     roomData,
     selectedItemId,
     hoveredItemId,
+    isEditableTitleId,
     safeRoomId,
     onMouseEnter,
     onMouseLeave,
     onClick,
     onIconButtonClick,
+    onBlurHandler,
 }) => {
+    const inputRef = useRef<HTMLInputElement | null>(null);
+
     // Hover 조건 추가: 메뉴가 열려 있는지 확인하기 위해 selectedItemId 조건 추가
     /**
      * 상태가 3개임
@@ -41,7 +47,26 @@ const RoomItem: React.FC<RoomItemProps> = ({
      */
     const isHoveredOrSelected =
         hoveredItemId === roomData.id || selectedItemId === roomData.id || parseInt(safeRoomId) === roomData.id;
+    const isEditable: boolean = isEditableTitleId === roomData.id;
 
+    const handleBlur = () => {
+        if (inputRef.current) {
+            onBlurHandler(inputRef.current.value);
+        }
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            handleBlur();
+        }
+    };
+
+    useEffect(() => {
+        if (isEditable && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isEditable]); // isEditableTitleId로 하면 모든 Room 컴포넌트 리빌드
     return (
         <Box
             sx={{
@@ -62,9 +87,23 @@ const RoomItem: React.FC<RoomItemProps> = ({
             onMouseLeave={onMouseLeave}
             onClick={onClick}
         >
-            <Typography variant="body2" color="textPrimary">
-                {roomData.name}
-            </Typography>
+            {isEditable ? (
+                <TextField
+                    variant="standard"
+                    size="small"
+                    defaultValue={roomData.name}
+                    inputRef={inputRef}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    sx={{
+                        backgroundColor: "#eeeeee",
+                    }}
+                />
+            ) : (
+                <Typography variant="body2" color="textPrimary">
+                    {roomData.name}
+                </Typography>
+            )}
             {isHoveredOrSelected && (
                 <IconButton
                     sx={{ padding: 0, margin: 0 }}
@@ -87,6 +126,7 @@ export const LeftComponent = () => {
     const [hoveredItemId, setHoveredItemId] = useState<number | null>(null);
     const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null); //anchor
     const [selectedItemId, setSelectedItemId] = useState<number | null>(null); //moreBtnSelected
+    const [isEditableTitleId, setIsEditableTitleId] = useState<number | null>(null);
     const isOpen = useLeftCompOpenStore((state) => state.isOpen);
     const setIsOpen = useLeftCompOpenStore((state) => state.setIsOpen);
 
@@ -103,8 +143,20 @@ export const LeftComponent = () => {
         },
         onSuccess: (data, variables, context) => {
             let d: RoomDeleteResDto = data.data;
+            console.log(d);
             queryClient.invalidateQueries({ queryKey: ["rooms"] });
             queryClient.invalidateQueries({ queryKey: ["room", d.deletedId] });
+        },
+    });
+
+    const updateRoomMutation = useMutation({
+        mutationFn: ({ id, name }: { id: number; name: string }) => {
+            return updateRoom(id, name);
+        },
+        onSuccess: (data, variables, context) => {
+            let d: RoomUpdateResDto = data.data;
+            queryClient.invalidateQueries({ queryKey: ["rooms"] });
+            queryClient.invalidateQueries({ queryKey: ["room", d.updatedId] });
         },
     });
 
@@ -128,9 +180,23 @@ export const LeftComponent = () => {
         setSelectedItemId(id);
     };
 
+    const handleRenameBlur = async (renamed: string) => {
+        if (isEditableTitleId) {
+            await updateRoomMutation.mutateAsync({ id: isEditableTitleId, name: renamed });
+            setIsEditableTitleId(null);
+        }
+    };
+
     const handleMenuClose = () => {
         setMenuAnchorEl(null);
         setSelectedItemId(null);
+    };
+
+    const handleRenameOption = () => {
+        if (selectedItemId) {
+            setIsEditableTitleId(selectedItemId);
+        }
+        handleMenuClose();
     };
 
     const handleDeleteOption = () => {
@@ -222,11 +288,13 @@ export const LeftComponent = () => {
                         roomData={v}
                         selectedItemId={selectedItemId}
                         hoveredItemId={hoveredItemId}
+                        isEditableTitleId={isEditableTitleId}
                         safeRoomId={safeRoomId}
                         onMouseEnter={() => handleMouseEnter(v.id)}
                         onMouseLeave={handleMouseLeave}
                         onClick={() => handleRoomClick(v.id)}
                         onIconButtonClick={handleIconButtonClick}
+                        onBlurHandler={handleRenameBlur}
                     />
                 ))}
                 <Menu
@@ -243,6 +311,7 @@ export const LeftComponent = () => {
                         horizontal: "left",
                     }}
                 >
+                    <MenuItem onClick={() => handleRenameOption()}>Rename</MenuItem>
                     <MenuItem onClick={() => handleDeleteOption()}>Delete</MenuItem>
                 </Menu>
             </Box>

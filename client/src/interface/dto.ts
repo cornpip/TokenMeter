@@ -8,6 +8,10 @@ export interface RoomDeleteResDto {
     deletedId: number;
 }
 
+export interface RoomUpdateResDto {
+    updatedId: number;
+}
+
 export interface ChatCreateDto {
     time: string;
     message: string;
