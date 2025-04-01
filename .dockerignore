@@ -1,13 +1,18 @@
 node_modules  
-client/node_modules
-server/node_modules
 
-build  
-client/dist
+# client
+client/node_modules
+
+# server
+server/node_modules
+server/database.db
 
 *.log  
 *.cache  
 *.env  
+
+.git  
+.gitignore  
 
 .dockerignore  
 Dockerfile  
