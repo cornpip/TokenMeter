@@ -11,6 +11,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditIcon from "@mui/icons-material/Edit";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+import { useEffect } from "react";
 
 export const Main = () => {
     const { roomId } = useParams<{ roomId: string }>();

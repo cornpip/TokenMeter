@@ -2,8 +2,10 @@ import axios from "axios";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCreateDto, ChatUpdateDto, ConfigUpdateDto } from "../interface/dto";
 
+const API_PORT = import.meta.env.VITE_API_PORT;
+
 export const api = axios.create({
-    baseURL: "http://localhost:4000",
+    baseURL: `http://localhost:${API_PORT}`,
 });
 
 export const getRoomById = async (id: string) => {

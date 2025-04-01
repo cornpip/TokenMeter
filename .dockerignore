@@ -9,8 +9,5 @@ client/dist
 *.cache  
 *.env  
 
-.git  
-.gitignore  
-
 .dockerignore  
 Dockerfile  

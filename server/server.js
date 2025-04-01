@@ -14,6 +14,7 @@ app.use("/chats", chatRoutes);
 app.use("/rooms", roomRoutes);
 app.use("/configs", configRoutes);
 
-app.listen(4000, () => {
-    console.log('Server is running on port 4000');
+const port = process.argv[2] || 10998;  // 인자가 없으면 기본값 3000 사용
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server is running on port ${port}`);
 });
