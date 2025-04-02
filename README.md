@@ -1,43 +1,32 @@
 # TokenMeter
 
-로컬에서 OpenAI API를 사용하여 데이터를 기록하고 토큰량을 측정합니다.
-
-## 서비스 장점
-
-- ChatGPT 서비스를 구독 비용(20+2$)만큼 사용하지 않는다면?  
-    - API KEY를 등록하고 사용한 만큼만 지불하자.
-  
-- ChatGPT는 별도 옵션을 해제하지 않으면 대화 기록을 학습에 사용한다.  
-    - API로 요청한 대화는 학습에 사용되지 않는다.  
-
-- 채팅 기록을 ChatGPT 플랫폼이 아닌 로컬DB에 저장할 수 있다.
-
-- 사용되는 토큰량을 시각적으로 확인하고, 효율적인 대화 방법을 생각할 수 있다.
-
-- 종종 ChatGPT(웹 사이트)만 느리고 API는 잘 동작할 때가 있다.  
-    - ChatGPT(웹 사이트) 서비스 문제에 영향을 안 받는다.
-
-## Tech Stack
-- Front-end - TS, React, MUI, React-Query
-- Back-end - Express
-- DB - SQLite3
-- DevOps - Docker
+- 로컬에서 OpenAI API Key 를 등록하고 ChatGPT 처럼 사용할 수 있습니다.
+- 로컬 DB에 데이터를 기록하고 토큰량을 측정합니다.
 
 ## Usage
-
-Nodejs, npm이 설치된 환경에서 소스 다운로드 후(git clone, git pull, 파일 다운로드 ...등등)  
-프로젝트 root 위치에서 아래 script를 입력합니다.
 ```
 npm run start
 ```
+1. Nodejs, npm이 설치된 환경에서 소스 다운로드(clone)
+2. root 위치에서 script 실행
 
-_도커 배포 환경 개발 중... (25-02-16)_  
+## Docker
+### [docker hub link](https://hub.docker.com/r/chltjsgy13751143/token_meter)
+```
+docker pull chltjsgy13751143/token_meter  
+
+docker run --name token_meter -p 10998:10998 -p 10999:10999 token_meter
+
+# 서버,클라이언트 포트 지정 가능
+docker run --name token_meter -e S_PORT=10991 -p 10991:10991 -e C_PORT=10992 -p 10992:10992 token_meter
+```
+이미지 최초 실행 시, client가 빌드가 되는데 약간의 시간이 소요됩니다.
 
 ## DB
-(sqlite3 DB) ./server/database.db 로 저장됩니다.  
-
-db를 옮기고자 한다면 위 경로에 database.db를 교체할 수 있습니다.  
-db를 삭제하면 새로운 database.db가 초기화/생성됩니다.
+```
+./server/database.db
+```
+DB 옮기거나 백업하려면 위 파일 교체 및 삭제(삭제 후, 실행 시 새로운 DB 생성)
 
 
 ## Service Example Images
