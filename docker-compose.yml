@@ -7,10 +7,9 @@ services:
             <<: *common-environment
         image: nginx:alpine
         ports:
-            - 80:80 # 호스트의 포트를 컨테이너의 80 포트에 매핑
-            # - ${NGINX_PORT:-10999}:80 # 호스트의 포트를 컨테이너의 80 포트에 매핑
+            - ${NGINX_PORT}:80 # 호스트의 포트를 컨테이너의 80 포트에 매핑
         volumes:
-            - ./nginx/nginx.conf:/etc/nginx/nginx.conf # Nginx 설정 파일을 마운트
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
             - ./nginx/common:/etc/nginx/common
             - ./client/dist:/token_meter_dist
         networks:

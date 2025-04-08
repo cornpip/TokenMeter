@@ -283,7 +283,7 @@ export const LeftComponent = () => {
             </Box>
 
             <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                {data.map((v, i) => (
+                {data && data.map((v, i) => (
                     <RoomItem
                         key={v.id}
                         roomData={v}
