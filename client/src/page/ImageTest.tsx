@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ConfigEntity } from "../interface/entity";
 import { getAllConfig } from "../api/api";
 import { useNavigate } from "react-router-dom";
+import { CONFIG_URL } from "../constants/path.const";
 
 type Resolution = "1024x1024" | "256x256" | "512x512" | "1792x1024" | "1024x1792" | null | undefined;
 
@@ -70,7 +71,7 @@ export const ImageTest = () => {
             }
         } else {
             alert("Please register the API key first");
-            navigate("/config");
+            navigate(CONFIG_URL);
         }
     };
 

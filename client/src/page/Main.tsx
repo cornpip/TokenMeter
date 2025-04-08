@@ -12,6 +12,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EditIcon from "@mui/icons-material/Edit";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import { useEffect } from "react";
+import { CONFIG_URL, IMAGE_URL, MAIN_URL } from "../constants/path.const";
 
 export const Main = () => {
     const { roomId } = useParams<{ roomId: string }>();
@@ -20,7 +21,7 @@ export const Main = () => {
     const navigate = useNavigate();
 
     const configClickHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-        navigate("/config");
+        navigate(CONFIG_URL);
     };
 
     const handleOpenToggle = () => {
@@ -28,7 +29,7 @@ export const Main = () => {
     };
 
     const handleNewChat = () => {
-        navigate("/main");
+        navigate(MAIN_URL);
     };
 
     return (
@@ -115,7 +116,7 @@ export const Main = () => {
                                     <IconButton
                                         color="inherit"
                                         onClick={() => {
-                                            navigate("/image");
+                                            navigate(IMAGE_URL);
                                         }}
                                     >
                                         <InsertPhotoIcon />

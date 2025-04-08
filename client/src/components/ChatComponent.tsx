@@ -9,6 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useChatStore } from "../status/store";
 import axios from "axios";
 import { TokenMeterModal } from "../modal/TokenMeterModal";
+import { MAIN_URL } from "../constants/path.const";
 
 export const ChatComponent = () => {
     console.log("@@@ ChatComponent");
@@ -37,7 +38,7 @@ export const ChatComponent = () => {
                 if (axios.isAxiosError(err) && err.response && err.response.status === 404) {
                     console.log("room deleted");
                 }
-                navigate("/main");
+                navigate(`${MAIN_URL}`);
                 return null;
             }
         },

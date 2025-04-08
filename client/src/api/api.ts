@@ -4,8 +4,12 @@ import { ChatCreateDto, ChatUpdateDto, ConfigUpdateDto } from "../interface/dto"
 
 const API_PORT = import.meta.env.VITE_API_PORT;
 
+// export const api = axios.create({
+//     baseURL: `http://localhost:${API_PORT}`,
+// });
+
 export const api = axios.create({
-    baseURL: `http://localhost:${API_PORT}`,
+    baseURL: `http://localhost/token_meter/api`,
 });
 
 export const getRoomById = async (id: string) => {
