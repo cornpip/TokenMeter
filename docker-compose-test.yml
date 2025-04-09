@@ -1,0 +1,49 @@
+x-common-environment: &common-environment
+    TZ: Asia/Seoul
+
+services:
+    nginx:
+        environment:
+            <<: *common-environment
+        image: nginx:alpine
+        ports:
+            - 80:80 # 호스트 포트(왼쪽)을 컨테이너의 80포트에 매핑
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./nginx/common:/etc/nginx/common
+            - ./client/dist:/token_meter_dist
+        networks:
+            - token_meter_network
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '30m'
+                max-file: '3'
+
+    token_server:
+        environment:
+            <<: *common-environment
+        image: node:23.11-bullseye-slim
+        volumes:
+            - ./server:/server
+            - /server/node_modules
+        working_dir: /server
+        command: >
+            sh -c "
+                apt update &&
+                apt install -y build-essential python3 sqlite3 libsqlite3-dev &&
+                npm install &&
+                npm run server
+              "
+        networks:
+            - token_meter_network
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '30m'
+                max-file: '3'
+
+networks:
+    token_meter_network:
+        name: token_meter_network
+        driver: bridge
