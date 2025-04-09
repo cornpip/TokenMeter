@@ -3,30 +3,50 @@
 - 로컬에서 OpenAI API Key 를 등록하고 ChatGPT 처럼 사용할 수 있습니다.
 - 로컬 DB에 데이터를 기록하고 토큰량을 측정합니다.
 
-## Usage
+## Docker Usage
+### 1. 환경 요구 사항
+- `Docker Engine` 이 동작하는 환경
+- `docker-compose` 실행 가능해야 함
+
+### 2. 실행 방법
+1. [`docker-compose.yml`](https://github.com/cornpip/TokenMeter/blob/master/docker-compose.yml) 파일을 다운로드하거나 복사
+2. `docker-compose.yml` 이 위치한 폴더에서 아래 명령어 실행
+```
+docker compose up
+```
+### 기본 포트 설정
+- 기본적으로 80 포트 사용
+- 원하는 포트로 변경하려면 {포트 지정} 부분을 수정
+```
+...
+    nginx:
+    environment:
+        <<: *common-environment
+    image: cornpip77/token-meter-nginx
+    ports:
+        - {포트 지정}:80
+...
+```
+
+## Development Setup
+로컬 환경에서 직접 개발하기 위한 설정 방법
+### 1. 환경 요구 사항
+- `Node.js` 가 설치된 환경
+
+### 2. 실행 방법
+프로젝트 디렉터리에서 아래 명령어 실행
+
 ```
 npm run start
 ```
-1. Nodejs, npm이 설치된 환경에서 소스 다운로드(clone)
-2. root 위치에서 script 실행
 
-## Docker
-### [docker hub link](https://hub.docker.com/r/chltjsgy13751143/token_meter)
-```
-docker pull chltjsgy13751143/token_meter  
-
-docker run --name token_meter -p 10998:10998 -p 10999:10999 token_meter
-
-# 서버,클라이언트 포트 지정 가능
-docker run --name token_meter -e S_PORT=10991 -p 10991:10991 -e C_PORT=10992 -p 10992:10992 token_meter
-```
-이미지 최초 실행 시, client가 빌드가 되는데 약간의 시간이 소요됩니다.
+개발 환경에서는 Nginx 없이 두 개의 포트를 사용합니다.
+- Server: `7776`(default)
+- Client: `7777`(default)
 
 ## DB
-```
-./server/database.db
-```
-DB 옮기거나 백업하려면 위 파일 교체 및 삭제(삭제 후, 실행 시 새로운 DB 생성)
+- DB 옮기거나 백업하려면 `./server/database.db` 파일 교체 및 삭제
+- 삭제 후, 실행 시 새로운 DB 생성
 
 
 ## Service Example Images

@@ -2,10 +2,14 @@ import axios from "axios";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCreateDto, ChatUpdateDto, ConfigUpdateDto } from "../interface/dto";
 
+const isDevMode = import.meta.env.VITE_DEV_MODE == '1' ? true : false;
 const API_PORT = import.meta.env.VITE_API_PORT;
 
+// docker(prod) = 상대 경로 사용
+const _baseUrl = isDevMode ? `http://localhost:${API_PORT}` : `/token_meter/api`;
+
 export const api = axios.create({
-    baseURL: `http://localhost:${API_PORT}`,
+    baseURL: _baseUrl,
 });
 
 export const getRoomById = async (id: string) => {

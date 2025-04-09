@@ -1,0 +1,34 @@
+x-common-environment: &common-environment
+    TZ: Asia/Seoul
+
+services:
+    nginx:
+        environment:
+            <<: *common-environment
+        image: cornpip77/token-meter-nginx
+        ports:
+            - 80:80 # 호스트 포트(왼쪽)를 컨테이너 포트 80에 매핑
+        networks:
+            - token_meter_network
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '30m'
+                max-file: '3'
+
+    token_server:
+        environment:
+            <<: *common-environment
+        image: cornpip77/token-meter-server
+        networks:
+            - token_meter_network
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '30m'
+                max-file: '3'
+
+networks:
+    token_meter_network:
+        name: token_meter_network
+        driver: bridge

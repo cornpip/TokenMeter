@@ -23,6 +23,6 @@ yarn-debug.log*
 yarn-error.log*
 
 ##
-nginx.conf
+# nginx.conf
 docker_client/dist/
 docker_client/node_modules/

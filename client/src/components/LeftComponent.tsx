@@ -11,6 +11,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useLeftCompOpenStore } from "../status/store";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+import { MAIN_URL } from "../constants/path.const";
 
 // RoomItem 컴포넌트의 prop 타입 정의
 interface RoomItemProps {
@@ -163,7 +164,7 @@ export const LeftComponent = () => {
     const handleRoomClick = (id: number) => {
         if (id !== selectedItemId) {
             setSelectedItemId(id);
-            navigate(`/main/${id}`);
+            navigate(`${MAIN_URL}/${id}`);
         }
     };
 
@@ -282,7 +283,7 @@ export const LeftComponent = () => {
             </Box>
 
             <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                {data.map((v, i) => (
+                {data && data.map((v, i) => (
                     <RoomItem
                         key={v.id}
                         roomData={v}

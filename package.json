@@ -1,6 +1,6 @@
 {
-  "name": "token_metered",
-  "version": "1.9.0",
+  "name": "token_meter",
+  "version": "2.1.0",
   "description": "local chat gpt",
   "main": "index.js",
   "dependencies": {
@@ -10,10 +10,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "setup": "npm i && npm install --prefix server && npm install --prefix client",
-    "dev": "concurrently \"npm run server --prefix server\" \"npm run dev --prefix client\"",
-    "start": "npm run setup && npm run dev",
-    "dev_docker": "concurrently \"npm run server --prefix server -- ${S_PORT}\" \"C_PORT=$C_PORT npm run dev_docker --prefix client\"",
-    "start_docker": "C_PORT=${C_PORT:-10999} S_PORT=${S_PORT:-10998} npm run setup && npm run dev_docker"
+    "dev": "concurrently \"npm run server --prefix server --7776\" \"npm run dev --prefix client\"",
+    "start": "npm run setup && npm run dev"
   },
   "author": "cornpip",
   "license": "ISC"

@@ -11,6 +11,7 @@ import { ConfigEntity } from "../interface/entity";
 import { ChatCompletionContentPart } from "openai/resources/index.mjs";
 import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
 import { ChatCreateDto, ChatUpdateDto } from "../interface/dto";
+import { CONFIG_URL } from "../constants/path.const";
 
 const getTitle = (msg: string): string => {
     const max_length: number = 15;
@@ -358,7 +359,7 @@ export const SubmitComponent = () => {
             }
         } else if (!openai) {
             alert("Please register the API key first");
-            navigate("/config");
+            navigate(CONFIG_URL);
         }
     };
 
