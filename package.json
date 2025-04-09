@@ -1,6 +1,6 @@
 {
-  "name": "token_metered",
-  "version": "1.9.0",
+  "name": "token_meter",
+  "version": "2.1.0",
   "description": "local chat gpt",
   "main": "index.js",
   "dependencies": {
