@@ -4,11 +4,10 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite --host 0.0.0.0 --port 10999",
-        "dev_docker": "vite --host 0.0.0.0 --port $C_PORT",
+        "dev": "vite --host 0.0.0.0 --port 7777",
         "build": "tsc -b && vite build",
         "lint": "eslint .",
-        "preview": "vite preview --host 0.0.0.0 --port 10999",
+        "preview": "vite preview --host 0.0.0.0 --port 7777",
         "format": "prettier --write ."
     },
     "dependencies": {
