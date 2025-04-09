@@ -1,14 +1,12 @@
 # Node.js 기반 이미지 사용
-FROM node:20-alpine
+FROM node:23.11-bullseye-slim
 
 WORKDIR /server
 
 # 필수 패키지 설치
-RUN apk update && apk add --no-cache \  
-    sqlite \
-    sqlite-libs \
-    sqlite-dev \
-    && rm -rf /var/cache/apk/*
+RUN apt update && \
+    apt install -y build-essential python3 sqlite3 libsqlite3-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # 프로젝트 파일 복사
 COPY ./ /

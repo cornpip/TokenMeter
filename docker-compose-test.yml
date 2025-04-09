@@ -9,8 +9,8 @@ services:
         ports:
             - 80:80 # 호스트 포트(왼쪽)을 컨테이너의 80포트에 매핑
         volumes:
-            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-            - ./nginx/common:/etc/nginx/common
+            - ./client/nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./client/nginx/common:/etc/nginx/common
             - ./client/dist:/token_meter_dist
         networks:
             - token_meter_network
@@ -23,15 +23,15 @@ services:
     token_server:
         environment:
             <<: *common-environment
-        image: node:23.11-bullseye-slim
+        image: node:20-alpine
         volumes:
             - ./server:/server
             - /server/node_modules
         working_dir: /server
         command: >
             sh -c "
-                apt update &&
-                apt install -y build-essential python3 sqlite3 libsqlite3-dev &&
+                apk update &&
+                apk add --no-cache sqlite sqlite-libs sqlite-dev
                 npm install &&
                 npm run server
               "

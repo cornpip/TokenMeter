@@ -5,11 +5,11 @@ services:
     nginx:
         environment:
             <<: *common-environment
-        image: token-meter-nginx
+        image: cornpip77/token-meter-nginx
         ports:
             - 80:80 # 호스트 포트(왼쪽)를 컨테이너 포트 80에 매핑
         networks:
-            - token_network
+            - token_meter_network
         logging:
             driver: 'json-file'
             options:
@@ -19,9 +19,9 @@ services:
     token_server:
         environment:
             <<: *common-environment
-        image: token-meter-server
+        image: cornpip77/token-meter-server
         networks:
-            - token_network
+            - token_meter_network
         logging:
             driver: 'json-file'
             options:
@@ -29,6 +29,6 @@ services:
                 max-file: '3'
 
 networks:
-    token_network:
+    token_meter_network:
         name: token_meter_network
         driver: bridge
