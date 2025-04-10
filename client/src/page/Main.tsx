@@ -38,7 +38,7 @@ export const Main = () => {
             maxWidth="xl"
             sx={{
                 width: "98vw",
-                height: "98vh",
+                height: "100vh",
                 paddingTop: 1,
                 paddingBottom: 2,
             }}
@@ -91,7 +91,7 @@ export const Main = () => {
                                     <ChatComponent />
                                 ) : (
                                     <Typography variant="h3" sx={{ marginBottom: 3 }}>
-                                        {"Start Local ChatGPT"}
+                                        {"Start Local TokenMeter"}
                                     </Typography>
                                 )}
                                 <SubmitComponent />
@@ -141,7 +141,7 @@ export const Main = () => {
                                     <ChatComponent />
                                 ) : (
                                     <Typography variant="h3" sx={{ marginBottom: 3 }}>
-                                        {"Start Local ChatGPT"}
+                                        {"Start Local TokenMeter"}
                                     </Typography>
                                 )}
                                 <SubmitComponent />

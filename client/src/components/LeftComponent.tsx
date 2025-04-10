@@ -11,7 +11,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useLeftCompOpenStore } from "../status/store";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
-import { MAIN_URL } from "../constants/path.const";
+import { IMAGE_URL, MAIN_URL } from "../constants/path.const";
 
 // RoomItem 컴포넌트의 prop 타입 정의
 interface RoomItemProps {
@@ -214,7 +214,7 @@ export const LeftComponent = () => {
 
     const handleNewChat = () => {
         setSelectedItemId(null);
-        navigate("/main");
+        navigate(MAIN_URL);
     };
 
     useEffect(() => {
@@ -271,7 +271,7 @@ export const LeftComponent = () => {
                     <IconButton
                         color="inherit"
                         onClick={() => {
-                            navigate("/image");
+                            navigate(IMAGE_URL);
                         }}
                     >
                         <InsertPhotoIcon />
