@@ -11,6 +11,7 @@
 ### 2. 실행 방법
 1. [`docker-compose.yml`](https://github.com/cornpip/TokenMeter/blob/master/docker-compose.yml) 파일을 다운로드하거나 복사
 2. `docker-compose.yml` 이 위치한 폴더에서 아래 명령어 실행
+3. __서비스 주소: http://localhost/token_meter/viewer/main__
 ```
 docker compose up
 ```
@@ -20,11 +21,11 @@ docker compose up
 ```
 ...
     nginx:
-    environment:
-        <<: *common-environment
-    image: cornpip77/token-meter-nginx
-    ports:
-        - {포트 지정}:80
+        environment:
+            <<: *common-environment
+        image: cornpip77/token-meter-nginx
+        ports:
+            - {포트 지정}:80
 ...
 ```
 

@@ -30,6 +30,7 @@
         "rehype-raw": "^7.0.0",
         "remark-gfm": "^4.0.0",
         "remark-math": "^6.0.0",
+        "token_meter": "file:..",
         "token_metered": "file:..",
         "zustand": "^5.0.0-rc.2"
     },
