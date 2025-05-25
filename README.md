@@ -117,3 +117,7 @@ Click the image icon on the top menu or go to /token_meter/viewer/image to open 
 1. Enter a text prompt
 2. Choose image size & quality
 3. The "Revised Prompt" displays the final version used (may be modified to improve results)
+
+## Questions & Feedback
+I'm continuously improving TokenMeter and truly value your input.  
+If you have any questions, bug reports, or feature requests, feel free to open an issue or submit a pull request. 
