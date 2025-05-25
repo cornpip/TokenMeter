@@ -7,7 +7,7 @@ services:
             <<: *common-environment
         image: cornpip77/token-meter-nginx
         ports:
-            - 80:80 # 호스트 포트(왼쪽)를 컨테이너 포트 80에 매핑
+            - 80:80 # host:container
         networks:
             - token_meter_network
         logging:
