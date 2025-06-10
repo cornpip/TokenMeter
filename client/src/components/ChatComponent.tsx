@@ -67,7 +67,7 @@ export const ChatComponent = () => {
         if (isSuccess) {
             const msgArr: ChatCompletionMessageParam[] = [];
             data.map((v) => {
-                msgArr.push({ role: v.is_answer === 1 ? "system" : "user", content: v.message });
+                msgArr.push({ role: v.is_answer === 1 ? "assistant" : "user", content: v.message });
             });
             setMsgHistory(msgArr);
         }

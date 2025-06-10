@@ -1,9 +1,26 @@
 import React, { useState } from "react";
-import { Autocomplete, Box, Button, Container, Slider, TextField, Typography } from "@mui/material";
+import {
+    Autocomplete,
+    Box,
+    Button,
+    Container,
+    IconButton,
+    Slider,
+    TextField,
+    Typography,
+    List,
+    ListItem,
+    ListItemText,
+    Stack,
+} from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConfigEntity } from "../interface/entity";
 import { getAllConfig, updateConfigById } from "../api/api";
 import { ConfigUpdateDto } from "../interface/dto";
+import { useConfigStore } from "../status/store";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { parseStringList } from "../util/JsonUtil";
 
 const models = [
     "You can use models that are not in the list",
@@ -20,31 +37,28 @@ const models = [
 
 export const Config = () => {
     const [isEditable, setIsEditable] = useState<boolean>(false);
-    const [config, setConfig] = useState<ConfigEntity>({
-        id: -1,
-        openai_api_key: "",
-        selected_model: "",
-        max_message: -1,
-    });
+    const { config, setConfig, resetConfig } = useConfigStore();
     const [n_config, n_setConfig] = useState<ConfigEntity>({
         id: -1,
         openai_api_key: "",
         selected_model: "",
         max_message: -1,
+        system_message: "",
     });
     const queryClient = useQueryClient();
+    const [instruct, setInstruct] = useState("");
+    const [maxMessageInput, setMaxMessageInput] = useState<string>("");
 
     const { isPending, error, data, isSuccess } = useQuery<ConfigEntity[]>({
         queryKey: ["configs"],
         queryFn: async () => {
             const data = await getAllConfig();
             if (data.length > 0) {
-                const apiKey = data[data.length - 1].openai_api_key;
-                if (apiKey) {
-                    setIsEditable(false);
-                }
-                setConfig(data[data.length - 1]);
-                n_setConfig(data[data.length - 1]);
+                setIsEditable(false);
+                const d = data[data.length - 1];
+                setConfig(d);
+                n_setConfig(d);
+                setMaxMessageInput(d.max_message.toString());
             }
             return data;
         },
@@ -62,22 +76,56 @@ export const Config = () => {
 
     const handleRegistration = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (data) {
+            setInstruct("");
             updateConfigMutation.mutate(n_config);
         }
     };
 
     const handleNumberInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const count = Number(event.target.value);
-        if (!isNaN(count)) {
-            if (count < 1) {
+        const value = event.target.value;
+        setMaxMessageInput(value);
+
+        const parsed = Number(value);
+        if (!isNaN(parsed)) {
+            if (parsed < 1) {
                 n_setConfig((v) => {
                     return { ...v, max_message: 1 };
                 });
             } else {
                 n_setConfig((v) => {
-                    return { ...v, max_message: count };
+                    return { ...v, max_message: parsed };
                 });
             }
+        }
+    };
+
+    const handleAdd = () => {
+        const trimmed = instruct.trim();
+        if (!trimmed) return;
+
+        try {
+            const prevList: string[] = JSON.parse(n_config.system_message || "[]");
+            const newList = [...prevList, trimmed];
+            n_setConfig((prev) => ({
+                ...prev,
+                system_message: JSON.stringify(newList),
+            }));
+            setInstruct("");
+        } catch (error) {
+            console.error("Failed to parse system_message:", error);
+        }
+    };
+
+    const handleRemove = (index: number) => {
+        try {
+            const prevList: string[] = JSON.parse(n_config.system_message || "[]");
+            const newList = prevList.filter((_, i) => i !== index);
+            n_setConfig((prev) => ({
+                ...prev,
+                system_message: JSON.stringify(newList),
+            }));
+        } catch (error) {
+            console.error("Failed to parse or update system_message:", error);
         }
     };
 
@@ -87,10 +135,12 @@ export const Config = () => {
         <Container
             maxWidth="lg"
             sx={{
+                paddingY: 4,
                 width: "100vw",
                 height: "100vh",
                 display: "flex",
                 flexDirection: "column",
+                alignItems: "center",
             }}
         >
             <Typography variant="h3"> {"Config Settings"} </Typography>
@@ -159,11 +209,59 @@ export const Config = () => {
                         label="maximum send message count"
                         variant="standard"
                         margin="normal"
-                        value={n_config.max_message}
+                        value={maxMessageInput}
                         onChange={handleNumberInputChange}
                         sx={{ width: "100%", marginBottom: 2 }}
                         disabled={!isEditable}
                     />
+                </Box>
+                <Box sx={{ mt: 1 }}>
+                    <Typography variant="h5" gutterBottom>
+                        System Instruction
+                    </Typography>
+
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                        <TextField
+                            fullWidth
+                            variant="filled"
+                            label="system instruction"
+                            value={instruct}
+                            onChange={(e) => setInstruct(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && isEditable) {
+                                    handleAdd();
+                                }
+                            }}
+                            disabled={!isEditable}
+                            slotProps={{
+                                input: {
+                                    sx: {
+                                        paddingTop: 1,
+                                    },
+                                },
+                            }}
+                        />
+                        <IconButton color="primary" onClick={handleAdd} disabled={!isEditable}>
+                            <AddIcon />
+                        </IconButton>
+                    </Stack>
+
+                    <List dense>
+                        {parseStringList(n_config.system_message).map((instruction, index) => (
+                            <ListItem
+                                key={index}
+                                secondaryAction={
+                                    isEditable && (
+                                        <IconButton edge="end" onClick={() => handleRemove(index)}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    )
+                                }
+                            >
+                                <ListItemText primary={`• ${instruction}`} />
+                            </ListItem>
+                        ))}
+                    </List>
                 </Box>
                 <Box
                     sx={{

@@ -54,16 +54,22 @@ db.serialize(() => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             openai_api_key TEXT,
             selected_model TEXT,
-            max_message INTEGER
+            max_message INTEGER,
+            system_message TEXT
         );
     `, (err) => {
         if (err) {
             return;
         }
 
+        const default_instructions = [
+            "You are a coding assistant. Always return code inside Markdown code blocks using triple backticks (```), and include the appropriate language identifier after the backticks (e.g., ```python, ```javascript). Do not return code outside of code blocks."
+        ];
+        const jsonString = JSON.stringify(default_instructions);
+        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key, selected_model, max_message, system_message) VALUES (NULL, 'gpt-4o-2024-11-20', 3, '${jsonString}');`;
+
         // 테이블이 생성된 경우에만 삽입
         const get_all_sql = `SELECT * FROM ${TABLE_CONFIG}`;
-        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key, selected_model, max_message) VALUES (NULL, 'gpt-4o-2024-11-20', 3);`;
         db.all(get_all_sql, (err, rows) => {
             if (err) {
                 console.error('Error checking rows', err);

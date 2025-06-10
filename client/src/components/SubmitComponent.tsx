@@ -5,13 +5,14 @@ import { createChat, createRoom, getAllConfig, updateChat } from "../api/api";
 import { useNavigate, useParams } from "react-router-dom";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
-import { useChatStore } from "../status/store";
+import { useChatStore, useConfigStore } from "../status/store";
 import OpenAI from "openai";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCompletionContentPart } from "openai/resources/index.mjs";
 import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
 import { ChatCreateDto, ChatUpdateDto } from "../interface/dto";
 import { CONFIG_URL } from "../constants/path.const";
+import { parseStringList } from "../util/JsonUtil";
 
 const getTitle = (msg: string): string => {
     const max_length: number = 15;
@@ -84,12 +85,7 @@ export const SubmitComponent = () => {
     const navigate = useNavigate();
     const chatData = useChatStore((state) => state.chatData);
     const msgHistory = useChatStore((state) => state.msgHistory);
-    const [config, setConfig] = useState<ConfigEntity>({
-        id: -1,
-        openai_api_key: "",
-        selected_model: "",
-        max_message: -1,
-    });
+    const { config, setConfig, resetConfig } = useConfigStore();
     const [openai, setOpenai] = useState<OpenAI>();
 
     const { isPending, error, data, isSuccess } = useQuery<ConfigEntity[]>({
@@ -245,22 +241,24 @@ export const SubmitComponent = () => {
     const handleSendMessage = async () => {
         if (message.trim() && openai) {
             let n_msgHistory: ChatCompletionMessageParam[] = [];
-            // 보내는 거 포함해서 maximum_message_count
-            if (config.max_message > 1) {
-                n_msgHistory = [...msgHistory.slice(-1 * (config.max_message - 1))];
+            // system message settings
+            const systemMsgList = parseStringList(config.system_message);
+            for (const systemMsg of systemMsgList) {
+                n_msgHistory.push({ role: "system", content: systemMsg });
             }
 
-            /**
-             * 채팅 시작이면 초기화 -> 방 만들고 -> navigate
-             * setMsgHistory timming = when "chats" usequery running
-             * 귀찮으니까 앞에서는 그냥 비우고 뒤에서 맞도록
-             */
             if (safeRoomId === "0") {
-                n_msgHistory = [];
+                // 채팅 시작이면 방 만들고 -> navigate
+                // setMsgHistory timming = when "chats" usequery running
                 await createRoomMutation.mutateAsync(getTitle(message)).then((res) => {
                     safeRoomId = res.data.id;
                     navigate(`./${safeRoomId}`);
                 });
+            } else {
+                // 보내는 거 포함해서 maximum_message_count
+                if (config.max_message > 1) {
+                    n_msgHistory = [...n_msgHistory, ...msgHistory.slice(-1 * (config.max_message - 1))];
+                }
             }
 
             // temp: image input chat
@@ -307,6 +305,7 @@ export const SubmitComponent = () => {
             답변 시간 걸림, 나중에 stream api 사용하기
             */
             try {
+                // console.log("######", n_msgHistory);
                 setTextFieldOff(true);
                 const completion = await openai.chat.completions.create({
                     messages: n_msgHistory,
@@ -327,7 +326,7 @@ export const SubmitComponent = () => {
 
                 const completionMsg = completion.choices[0].message;
                 if (completionMsg.content) {
-                    n_msgHistory.push({ role: "system", content: completionMsg.content });
+                    n_msgHistory.push({ role: "assistant", content: completionMsg.content });
 
                     // 질문 응답(db)
                     const db_answer: ChatCreateDto = {

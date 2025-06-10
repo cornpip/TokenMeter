@@ -43,7 +43,8 @@ router.put('/:id', (req, res) => {
     const { id } = req.params;
     const { openai_api_key,
         selected_model,
-        max_message
+        max_message,
+        system_message,
     } = req.body;
 
     // 동적으로 업데이트할 컬럼과 값 구성
@@ -63,6 +64,11 @@ router.put('/:id', (req, res) => {
     if (max_message !== undefined) {
         updates.push('max_message = ?');
         values.push(max_message);
+    }
+
+    if (system_message !== undefined) {
+        updates.push('system_message = ?');
+        values.push(system_message);
     }
 
     if (updates.length === 0) {

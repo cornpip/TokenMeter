@@ -43,13 +43,32 @@ export const useTokenMeterModalStore = create<TokenMeterModalStore>((set) => ({
     setOpen: (isOpen: boolean, content?: ChatEntity) => set({ open: isOpen, content }),
 }));
 
-// deprecated
-interface ApiKeyStore {
-    apiKey: string;
-    setApiKey: (key: string) => void;
+interface ConfigStore {
+    config: ConfigEntity;
+    setConfig: (newConfig: Partial<ConfigEntity>) => void;
+    resetConfig: () => void;
 }
 
-export const useApiKeyStore = create<ApiKeyStore>((set) => ({
-    apiKey: "",
-    setApiKey: (key: string) => set({ apiKey: key }),
+export const useConfigStore = create<ConfigStore>((set) => ({
+    config: {
+        id: -1,
+        openai_api_key: "",
+        selected_model: "",
+        max_message: -1,
+        system_message: "",
+    },
+    setConfig: (newConfig) =>
+        set((state) => ({
+            config: { ...state.config, ...newConfig },
+        })),
+    resetConfig: () =>
+        set({
+            config: {
+                id: -1,
+                openai_api_key: "",
+                selected_model: "",
+                max_message: -1,
+                system_message: "",
+            },
+        }),
 }));

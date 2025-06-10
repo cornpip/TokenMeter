@@ -22,4 +22,5 @@ export interface ConfigEntity {
     openai_api_key: string;
     selected_model: string;
     max_message: number;
+    system_message: string;
 }

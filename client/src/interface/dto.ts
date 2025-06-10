@@ -2,6 +2,8 @@ export interface ConfigUpdateDto {
     id: number;
     openai_api_key?: string;
     selected_model?: string;
+    max_message?: number;
+    system_message?: string;
 }
 
 export interface RoomDeleteResDto {
