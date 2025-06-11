@@ -23,7 +23,7 @@ jobs:
         run: npm install
         working-directory: client
 
-      - name: Build React app
+      - name: Build client
         run: npm run build
         working-directory: client
 
@@ -39,3 +39,32 @@ jobs:
       # 5. Docker 이미지 푸시
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/token-meter-nginx:test
+
+  server-docker-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 리포지토리 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Node 설치 및 의존성 설치 (서버)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install server dependencies
+        run: npm install
+        working-directory: server
+
+      # 3. Docker 로그인
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # 4. Docker 이미지 빌드 (Server)
+      - name: Build Server Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/token-meter-server:test .
+        working-directory: server
+
+      # 5. Docker 이미지 푸시 (Server)
+      - name: Push Server Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/token-meter-server:test
