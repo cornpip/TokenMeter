@@ -1,0 +1,41 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - master  # 배포 브랜치
+      - action-test
+
+jobs:
+  client-build-and-docker-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 리포지토리 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Node 설치 및 React 빌드
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: client
+
+      - name: Build React app
+        run: npm run build
+        working-directory: client
+
+      # 3. Docker 로그인
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # 4. Docker 이미지 빌드
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/token-meter-nginx:test .
+        working-directory: client
+
+      # 5. Docker 이미지 푸시
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/token-meter-nginx:test
