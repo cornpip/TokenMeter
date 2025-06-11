@@ -5,7 +5,7 @@ services:
     nginx:
         environment:
             <<: *common-environment
-        image: cornpip77/token-meter-nginx
+        image: cornpip77/token-meter-nginx:latest
         ports:
             - 80:80 # host:container
         networks:
@@ -19,7 +19,7 @@ services:
     token_server:
         environment:
             <<: *common-environment
-        image: cornpip77/token-meter-server
+        image: cornpip77/token-meter-server:latest
         networks:
             - token_meter_network
         logging:
