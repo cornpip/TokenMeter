@@ -10,7 +10,9 @@
  
 ### 2. How to Run 
 1. Download or copy the [`docker-compose.yml`](https://github.com/cornpip/TokenMeter/blob/master/docker-compose.yml) file 
-2. Run the command `docker compoes up`
+2. Run the command `docker compoes up`  
+(If you’ve run this before and want the latest images, please run `docker compose pull` before `docker compose up`)
+
 3. __Service URL: http://localhost/token_meter/viewer/main__ 
 
 By default, the service runs on port 80.
