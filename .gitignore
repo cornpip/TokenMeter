@@ -26,3 +26,6 @@ yarn-error.log*
 # nginx.conf
 docker_client/dist/
 docker_client/node_modules/
+
+# test
+/test
