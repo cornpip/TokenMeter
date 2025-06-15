@@ -16,7 +16,7 @@ def segment_image_from_url_save(image_url, prompt_points, save_path):
     # 3) 이미지 세팅
     predictor.set_image(image)
 
-    # 4) 점 프롬프트 준비 (라벨 1 = foreground)
+    # 4) 점 프롬프트 준비 (라벨 1 = 물체 안, 라벨 0 = 물체 밖)
     labels = [1] * len(prompt_points)
     print(labels)
     print(prompt_points)

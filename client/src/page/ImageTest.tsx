@@ -1,11 +1,22 @@
 import { useState } from "react";
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    Container,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Typography,
+} from "@mui/material";
 import OpenAI from "openai";
 import { useQuery } from "@tanstack/react-query";
 import { ConfigEntity } from "../interface/entity";
 import { getAllConfig } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import { CONFIG_URL } from "../constants/path.const";
+import { ImageSegmentationUploader } from "../components/Image/ImageSegmentationUploader";
 
 type Resolution = "1024x1024" | "256x256" | "512x512" | "1792x1024" | "1024x1792" | null | undefined;
 
@@ -78,20 +89,36 @@ export const ImageTest = () => {
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box> {`An error has occurred: ${error.message}`}</Box>;
     return (
-        <Box sx={{ p: 4, textAlign: "center" }}>
+        <Container
+            sx={{
+                p: 4,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+            }}
+        >
             <Typography variant="h4" gutterBottom>
-                Generate an Image(dall-e-3)
+                Generate an Image
             </Typography>
+            <Box
+                sx={{
+                    width: "100%",
+                    marginY: 2,
+                }}
+            >
+                <ImageSegmentationUploader />
+            </Box>
             <TextField
-                label="Image Prompt"
-                variant="outlined"
+                label="enter your prompt"
+                variant="filled"
                 fullWidth
                 margin="normal"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
             />
             <TextField
-                label="Revised Prompt"
+                label="prompt refined"
                 variant="outlined"
                 fullWidth
                 multiline
@@ -140,6 +167,6 @@ export const ImageTest = () => {
                     <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", borderRadius: "8px" }} />
                 </Box>
             )}
-        </Box>
+        </Container>
     );
 };

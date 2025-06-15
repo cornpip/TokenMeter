@@ -2,7 +2,8 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Main } from "./page/Main";
 import { Config } from "./page/Config";
 import { ImageTest } from "./page/ImageTest";
-import { CONFIG_URL, IMAGE_URL, MAIN_URL } from "./constants/path.const";
+import { CONFIG_URL, IMAGE_URL, MAIN_URL, TEST_URL } from "./constants/path.const";
+import { Test } from "./page/Test";
 
 export const App = () => {
     return (
@@ -12,6 +13,7 @@ export const App = () => {
                 <Route path={MAIN_URL} element={<Main />} />
                 <Route path={CONFIG_URL} element={<Config />} />
                 <Route path={IMAGE_URL} element={<ImageTest />} />
+                <Route path={TEST_URL} element={<Test />} />
                 <Route path="*" element={<Navigate to={MAIN_URL} replace />} />
             </Routes>
         </BrowserRouter>
