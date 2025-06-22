@@ -322,13 +322,13 @@ export const CreateImageEdit = () => {
             } else {
                 fileImage = await convertImageToPng(imageFile);
             }
-            const resizedFileImage = await resizeAndPadImageFile(fileImage, 1024);
+            const resizedFileImage = await resizeAndPadImageFile(fileImage, 512);
             setResizedFileImageUrl(URL.createObjectURL(resizedFileImage));
 
             // 2. 마스크 Blob → File (PNG로 가정)
             const maskBlob = await fetch(resultUrl).then((res) => res.blob());
             const maskFile = new File([maskBlob], "mask.png", { type: "image/png" });
-            const resizedMaskImage = await resizeAndPadMaskFile(maskFile, 1024);
+            const resizedMaskImage = await resizeAndPadMaskFile(maskFile, 512);
             setResizedMaskImageUrl(URL.createObjectURL(resizedMaskImage));
 
             const response = await openai.images.edit({
@@ -542,7 +542,7 @@ export const CreateImageEdit = () => {
                     </Box>
                 )}
 
-                {resizedFileImageUrl && (
+                {/* {resizedFileImageUrl && (
                     <div>
                         <h4>Resized Original Image Preview</h4>
                         <img
@@ -551,10 +551,9 @@ export const CreateImageEdit = () => {
                             style={{ maxWidth: 300, maxHeight: 300, border: "1px solid #ccc" }}
                         />
                     </div>
-                )}
+                )} */}
 
-                {/* 리사이즈된 마스크 이미지 미리보기 */}
-                {resizedMaskImageUrl && (
+                {/* {resizedMaskImageUrl && (
                     <div>
                         <h4>Resized Mask Image Preview</h4>
                         <img
@@ -563,7 +562,7 @@ export const CreateImageEdit = () => {
                             style={{ maxWidth: 300, maxHeight: 300, border: "1px solid #ccc" }}
                         />
                     </div>
-                )}
+                )} */}
 
                 {editResultUrl && (
                     <Box>

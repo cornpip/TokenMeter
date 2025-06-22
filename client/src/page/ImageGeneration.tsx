@@ -39,10 +39,9 @@ export const ImageGeneration = () => {
     }, []);
 
     return (
-        <Box sx={{ display: "flex", height: "100vh" }}>
+        <Box sx={{ display: "flex", minHeight: "100vh" }}>
             <ResizableBox
                 width={drawerWidth}
-                height={windowHeight}
                 axis="x"
                 minConstraints={[180, 0]}
                 maxConstraints={[400, 0]}
@@ -64,6 +63,7 @@ export const ImageGeneration = () => {
                 style={{
                     boxSizing: "border-box",
                     backgroundColor: "#f5f5f5",
+                    height: "100%",
                 }}
             >
                 <Box sx={{ width: "100%", height: "100%" }}>
