@@ -12,15 +12,14 @@ import {
 } from "@mui/material";
 import OpenAI from "openai";
 import { useQuery } from "@tanstack/react-query";
-import { ConfigEntity } from "../interface/entity";
-import { getAllConfig } from "../api/api";
+import { ConfigEntity } from "../../interface/entity";
+import { getAllConfig } from "../../api/api";
 import { useNavigate } from "react-router-dom";
-import { CONFIG_URL } from "../constants/path.const";
-import { ImageSegmentationUploader } from "../components/Image/ImageSegmentationUploader";
+import { CONFIG_URL } from "../../constants/path.const";
 
 type Resolution = "1024x1024" | "256x256" | "512x512" | "1792x1024" | "1024x1792" | null | undefined;
 
-export const ImageTest = () => {
+export const CreateImage = () => {
     const [prompt, setPrompt] = useState<string>("");
     const [revisedPrompt, setRevisedPrompt] = useState<string>("");
     const [imageUrl, setImageUrl] = useState<string>();
@@ -99,16 +98,8 @@ export const ImageTest = () => {
             }}
         >
             <Typography variant="h4" gutterBottom>
-                Generate an Image
+                Create Image
             </Typography>
-            <Box
-                sx={{
-                    width: "100%",
-                    marginY: 2,
-                }}
-            >
-                <ImageSegmentationUploader />
-            </Box>
             <TextField
                 label="enter your prompt"
                 variant="filled"

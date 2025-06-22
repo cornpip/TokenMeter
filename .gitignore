@@ -29,3 +29,4 @@ docker_client/node_modules/
 
 # test
 /test
+/llm_test

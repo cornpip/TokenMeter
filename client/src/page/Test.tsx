@@ -1,5 +1,5 @@
 import { Container } from "@mui/material";
-import { ImageSegmentationUploader } from "../components/Image/ImageSegmentationUploader";
+import { CreateImageEdit } from "../components/Image/CreateImageEdit";
 
 export const Test = () => {
     return (
@@ -14,7 +14,7 @@ export const Test = () => {
                 alignItems: "center",
             }}
         >
-            <ImageSegmentationUploader />
+            <CreateImageEdit />
         </Container>
     );
 };
