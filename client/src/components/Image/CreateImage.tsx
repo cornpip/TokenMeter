@@ -108,18 +108,8 @@ export const CreateImage = () => {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
             />
-            <TextField
-                label="prompt refined"
-                variant="outlined"
-                fullWidth
-                multiline
-                maxRows={4}
-                margin="normal"
-                value={revisedPrompt}
-                disabled
-            />
 
-            <Box sx={{ display: "flex", gap: 2 }}>
+            <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
                 <FormControl sx={{ flexGrow: 1 }} margin="normal">
                     <InputLabel>{"Generate Image Size"}</InputLabel>
                     <Select
@@ -150,12 +140,33 @@ export const CreateImage = () => {
             <Button variant="contained" color="primary" onClick={handleGenerateImage} disabled={loading} sx={{ mt: 2 }}>
                 {loading ? "Generating..." : "Generate Image"}
             </Button>
-
-            {/* 이미지 표시 */}
             {imageUrl && (
-                <Box mt={4}>
-                    <Typography variant="h6">Generated Image:</Typography>
-                    <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", borderRadius: "8px" }} />
+                <Box
+                    sx={{
+                        marginTop: 2,
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 2,
+                        width: "100%",
+                        alignItems: "center",
+                    }}
+                >
+                    <TextField
+                        label="prompt refined"
+                        variant="outlined"
+                        fullWidth
+                        multiline
+                        maxRows={15}
+                        margin="normal"
+                        value={revisedPrompt}
+                        disabled
+                    />
+
+                    {/* 이미지 표시 */}
+                    <Box mt={4}>
+                        <Typography variant="h6">Generated Image:</Typography>
+                        <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", borderRadius: "8px" }} />
+                    </Box>
                 </Box>
             )}
         </Container>

@@ -1,5 +1,16 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Stack, Typography, Box, Button, CircularProgress, Container, TextField } from "@mui/material";
+import {
+    Stack,
+    Typography,
+    Box,
+    Button,
+    Container,
+    TextField,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+} from "@mui/material";
 import axios from "axios";
 import OpenAI from "openai";
 import { getAllConfig } from "../../api/api";
@@ -7,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ConfigEntity } from "../../interface/entity";
 
 type Point = [number, number];
+type EditResolution = "256x256" | "512x512" | "1024x1024" | null;
 
 export const CreateImageEdit = () => {
     const imgRef = useRef<HTMLImageElement>(null);
@@ -24,6 +36,7 @@ export const CreateImageEdit = () => {
     const [openai, setOpenai] = useState<OpenAI>();
     const [resizedFileImageUrl, setResizedFileImageUrl] = useState<string>("");
     const [resizedMaskImageUrl, setResizedMaskImageUrl] = useState<string>("");
+    const [size, setSize] = useState<EditResolution>("1024x1024");
 
     const { isPending, error, data, isSuccess } = useQuery<ConfigEntity[]>({
         queryKey: ["configs"],
@@ -153,6 +166,7 @@ export const CreateImageEdit = () => {
     const handleResetImage = () => {
         setPreviewUrl("");
         setResultUrl("");
+        setEditResultUrl("");
         setClickPoints([]);
         setClickLabels([]);
         if (inputRef.current) inputRef.current.value = "";
@@ -369,7 +383,7 @@ export const CreateImageEdit = () => {
                     marginBottom: 3,
                 }}
             >
-                Create Image Edit
+                Edit Image(inpaint)
             </Typography>
             <Box
                 sx={{
@@ -377,6 +391,7 @@ export const CreateImageEdit = () => {
                     flexDirection: "column",
                     width: "100%",
                     gap: 2,
+                    marginBottom: 60,
                 }}
             >
                 {!previewUrl ? (
@@ -505,7 +520,7 @@ export const CreateImageEdit = () => {
                                 disabled={clickPoints.length === 0}
                                 onClick={handleSubmit}
                             >
-                                {loading ? <CircularProgress size={24} /> : "mask generate"}
+                                Mask Generate
                             </Button>
                         </Box>
                     </Box>
@@ -520,27 +535,67 @@ export const CreateImageEdit = () => {
                     sx={{ mb: 2 }}
                 />
 
-                <Button variant="contained" disabled={!resultUrl || !prompt} onClick={handleCreateImageEdit}>
-                    {loading ? <CircularProgress size={24} /> : "OpenAI Image Edit"}
+                <FormControl sx={{ flexGrow: 1 }} margin="normal">
+                    <InputLabel>{"Generate Image Size"}</InputLabel>
+                    <Select
+                        value={size}
+                        onChange={(e) => setSize(e.target.value as EditResolution)}
+                        label={"Generate Image Size"}
+                        variant="standard"
+                    >
+                        <MenuItem value="1024x1024">1024x1024</MenuItem>
+                        <MenuItem value="512x512">512x512</MenuItem>
+                        <MenuItem value="256x256">256x256</MenuItem>
+                    </Select>
+                </FormControl>
+
+                <Button variant="contained" disabled={!resultUrl || !prompt || loading} onClick={handleCreateImageEdit}>
+                    {loading ? "Generating..." : "Generate Image"}
                 </Button>
 
-                {/* 마스크 미리보기 */}
-                {resultUrl && (
-                    <Box sx={{ mt: 2, textAlign: "center" }}>
-                        <h4>Generated Mask Preview</h4>
-                        <img
-                            src={resultUrl}
-                            alt="mask preview"
-                            style={{
-                                maxWidth: "100%",
-                                maxHeight: 200,
-                                border: "1px solid #ccc",
-                                borderRadius: 4,
-                                objectFit: "contain",
-                            }}
-                        />
-                    </Box>
-                )}
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 2,
+                        width: "100%",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                >
+                    {/* 마스크 미리보기 */}
+                    {resultUrl && (
+                        <Box sx={{}}>
+                            <h4>Generated Mask Preview</h4>
+                            <img
+                                src={resultUrl}
+                                alt="mask preview"
+                                style={{
+                                    maxWidth: "100%",
+                                    height: 400,
+                                    border: "1px solid #ccc",
+                                    borderRadius: 4,
+                                    objectFit: "contain",
+                                }}
+                            />
+                        </Box>
+                    )}
+
+                    {editResultUrl && (
+                        <Box>
+                            <h4>Edited Result Image:</h4>
+                            <img
+                                src={editResultUrl}
+                                alt="edited"
+                                style={{
+                                    maxWidth: "100%",
+                                    height: 400,
+                                    border: "1px solid #ccc",
+                                }}
+                            />
+                        </Box>
+                    )}
+                </Box>
 
                 {/* {resizedFileImageUrl && (
                     <div>
@@ -563,17 +618,6 @@ export const CreateImageEdit = () => {
                         />
                     </div>
                 )} */}
-
-                {editResultUrl && (
-                    <Box>
-                        <h4>Edited Result Image:</h4>
-                        <img
-                            src={editResultUrl}
-                            alt="edited"
-                            style={{ maxWidth: 300, maxHeight: 300, border: "1px solid #ccc" }}
-                        />
-                    </Box>
-                )}
             </Box>
         </Container>
     );

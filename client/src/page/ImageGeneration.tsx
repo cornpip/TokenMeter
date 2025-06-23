@@ -16,6 +16,19 @@ export const ImageGeneration = () => {
     const [drawerWidth, setDrawerWidth] = useState(240);
     const [windowHeight, setWindowHeight] = React.useState(window.innerHeight);
 
+    const getApiOptionsTitle = (option: ApiOption): string => {
+        switch (option) {
+            case "createImage":
+                return "Generate";
+            case "createImageEdit":
+                return "Edit(Inpaint)";
+            default: {
+                const _exhaustiveCheck: never = option;
+                return _exhaustiveCheck;
+            }
+        }
+    };
+
     const renderContent = () => {
         switch (selectedApi) {
             case "createImage":
@@ -69,7 +82,8 @@ export const ImageGeneration = () => {
                 <Box sx={{ width: "100%", height: "100%" }}>
                     <Box
                         sx={{
-                            paddingY: 3,
+                            paddingTop: 5,
+                            paddingBottom: 2,
                             cursor: "pointer",
                             "&:hover": { backgroundColor: "#f0f0f0" }, // hover 효과도 가능
                         }}
@@ -77,6 +91,8 @@ export const ImageGeneration = () => {
                     >
                         <Typography variant="h6" textAlign="center" gutterBottom>
                             TokenMeter
+                            <br />
+                            (Image)
                         </Typography>
                     </Box>
                     <List>
@@ -86,7 +102,7 @@ export const ImageGeneration = () => {
                                 selected={selectedApi === option}
                                 onClick={() => setSelectedApi(option)}
                             >
-                                <ListItemText primary={option} />
+                                <ListItemText primary={getApiOptionsTitle(option)} />
                             </ListItemButton>
                         ))}
                     </List>
