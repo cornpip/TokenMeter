@@ -35,7 +35,7 @@ async def segment_image(
         pil_image = Image.open(BytesIO(contents)).convert("RGB")
         predictor.set_image(pil_image)
 
-        ## check
+        # check
         width, height = pil_image.size
         print("이미지 사이즈:", width, height)
 
@@ -67,14 +67,12 @@ async def segment_image(
                 box=None,
             )
 
-        for i in range(len(masks)):
-            mask = masks[i]
-            score = scores[i]
-
-            pixel_count = np.count_nonzero(mask)  # 마스크 픽셀 수 (0이 아닌 값의 개수)
-            
-            print(f"[{i}] mask pixel count: {pixel_count}")
-            print(f"[{i}] score: {score:.4f}")
+        # for i in range(len(masks)):
+        #     mask = masks[i]
+        #     score = scores[i]
+        #     pixel_count = np.count_nonzero(mask)  # 마스크 픽셀 수 (0이 아닌 값의 개수)
+        #     print(f"[{i}] mask pixel count: {pixel_count}")
+        #     print(f"[{i}] score: {score:.4f}")
 
         # 4) score 기준 최고 마스크 선택
         best_idx = np.argmax(scores)  # 가장 높은 score를 가진 마스크 인덱스
@@ -95,8 +93,10 @@ async def segment_image(
 
         # 6) OpenAI 요구 포맷 마스크 생성 (투명 배경, 편집 영역은 투명)
         # OpenAI는 편집할 영역을 투명(알파 0)으로 요구하므로 best_mask 반전 처리
-        alpha_channel = Image.fromarray(255 - best_mask).convert("L")  # 255-best_mask : 편집영역 투명(0)
-        mask_image = Image.new("RGBA", pil_image.size, (0, 0, 0, 255))  # 검정 배경 불투명
+        alpha_channel = Image.fromarray(
+            255 - best_mask).convert("L")  # 255-best_mask : 편집영역 투명(0)
+        mask_image = Image.new("RGBA", pil_image.size,
+                               (0, 0, 0, 255))  # 검정 배경 불투명
         mask_image.putalpha(alpha_channel)  # 알파 채널로 편집 영역 지정
 
         # 8) 이미지 반환

@@ -1,17 +1,21 @@
-# Base image
-FROM huggingface/transformers-pytorch-gpu:latest
+FROM pytorch/pytorch:2.7.0-cuda11.8-cudnn9-runtime
 
-# Set working directory
 WORKDIR /app
 
-# Install FastAPI and other required packages
-RUN pip install --upgrade pip \
-    && pip install "fastapi[all]"
+# 시스템 패키지 설치
+RUN apt update && apt install -y git
+RUN apt update && apt install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Clone and install sam2
+# Python 패키지 설치
+RUN pip install --upgrade pip \
+    && pip install "fastapi[all]" \
+    && pip install huggingface_hub
+
 RUN git clone https://github.com/facebookresearch/sam2.git \
     && cd sam2 \
-    && pip install -e .
+    && pip install --no-cache-dir -e . --no-build-isolation \
+    && rm -rf /root/.cache/pip
 
 # Expose port (optional, for FastAPI app)
 EXPOSE 7775
