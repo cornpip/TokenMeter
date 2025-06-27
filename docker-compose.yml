@@ -28,6 +28,20 @@ services:
                 max-size: '30m'
                 max-file: '3'
 
+    # runtime: nvidia option is available in compose version 2 and above.
+    token_ai:
+        environment:
+            <<: *common-environment
+        image: cornpip77/token-meter-ai:latest
+        runtime: nvidia
+        networks:
+            - token_meter_network
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '30m'
+                max-file: '3'
+
 networks:
     token_meter_network:
         name: token_meter_network

@@ -2,8 +2,10 @@ FROM pytorch/pytorch:2.7.0-cuda11.8-cudnn9-runtime
 
 WORKDIR /app
 
+# copy
+COPY ./server ./server
+
 # 시스템 패키지 설치
-RUN apt update && apt install -y git
 RUN apt update && apt install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 
@@ -12,6 +14,7 @@ RUN pip install --upgrade pip \
     && pip install "fastapi[all]" \
     && pip install huggingface_hub
 
+# sam2
 RUN git clone https://github.com/facebookresearch/sam2.git \
     && cd sam2 \
     && pip install --no-cache-dir -e . --no-build-isolation \
@@ -21,4 +24,4 @@ RUN git clone https://github.com/facebookresearch/sam2.git \
 EXPOSE 7775
 
 # Default command
-CMD ["/bin/bash"]
+CMD ["sh", "-c", "cd server && uvicorn main:app --host 0.0.0.0 --port 7775"]

@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import OpenAI from "openai";
-import { getAllConfig } from "../../api/api";
+import { getAllConfig, segmentWithPoints } from "../../api/api";
 import { useQuery } from "@tanstack/react-query";
 import { ConfigEntity } from "../../interface/entity";
 
@@ -29,6 +29,7 @@ export const CreateImageEdit = () => {
     const [clickLabels, setClickLabels] = useState<number[]>([]);
     const [originalSize, setOriginalSize] = useState<{ width: number; height: number } | null>(null);
     const [loading, setLoading] = useState(false);
+    const [maskLoading, setMaskLoading] = useState(false);
     const [resultUrl, setResultUrl] = useState<string>("");
     const [isDragging, setIsDragging] = useState(false);
     const [prompt, setPrompt] = useState("");
@@ -109,36 +110,21 @@ export const CreateImageEdit = () => {
         }
     };
 
-    const submitWithPoints = async (points: Point[], labels: number[]) => {
-        if (!imageFile || points.length === 0) return;
-
-        const formData = new FormData();
-        formData.append("image", imageFile);
-        formData.append("point_coords", JSON.stringify(points));
-        formData.append("point_labels", JSON.stringify(labels));
-        console.log(labels, points);
-
-        try {
-            setLoading(true);
-            const response = await axios.post("http://localhost:7775/segment", formData, {
-                responseType: "blob",
-            });
-            const blobUrl = URL.createObjectURL(response.data);
-            setResultUrl(blobUrl);
-        } catch (err) {
-            console.error("세그먼트 요청 실패:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleSubmit = async () => {
         if (!imageFile || clickPoints.length === 0 || clickLabels.length === 0) return;
         setResultUrl(""); // sam result
         setResizedMaskImageUrl("");
         setResizedFileImageUrl("");
         setEditResultUrl("");
-        await submitWithPoints(clickPoints, clickLabels);
+
+        // api
+        setMaskLoading(true);
+        const blob = await segmentWithPoints(imageFile, clickPoints, clickLabels);
+        if (blob) {
+            const blobUrl = URL.createObjectURL(blob);
+            setResultUrl(blobUrl);
+        }
+        setMaskLoading(false);
     };
 
     const handleImageMouseDown = (e: React.MouseEvent<HTMLImageElement>) => {
@@ -520,7 +506,7 @@ export const CreateImageEdit = () => {
                                 disabled={clickPoints.length === 0}
                                 onClick={handleSubmit}
                             >
-                                Mask Generate
+                                {maskLoading ? "Generating..." : "Mask Generate"}
                             </Button>
                         </Box>
                     </Box>
