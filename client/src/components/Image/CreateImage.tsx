@@ -1,15 +1,25 @@
 import { useState } from "react";
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    Container,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Typography,
+} from "@mui/material";
 import OpenAI from "openai";
 import { useQuery } from "@tanstack/react-query";
-import { ConfigEntity } from "../interface/entity";
-import { getAllConfig } from "../api/api";
+import { ConfigEntity } from "../../interface/entity";
+import { getAllConfig } from "../../api/api";
 import { useNavigate } from "react-router-dom";
-import { CONFIG_URL } from "../constants/path.const";
+import { CONFIG_URL } from "../../constants/path.const";
 
 type Resolution = "1024x1024" | "256x256" | "512x512" | "1792x1024" | "1024x1792" | null | undefined;
 
-export const ImageTest = () => {
+export const CreateImage = () => {
     const [prompt, setPrompt] = useState<string>("");
     const [revisedPrompt, setRevisedPrompt] = useState<string>("");
     const [imageUrl, setImageUrl] = useState<string>();
@@ -78,30 +88,28 @@ export const ImageTest = () => {
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box> {`An error has occurred: ${error.message}`}</Box>;
     return (
-        <Box sx={{ p: 4, textAlign: "center" }}>
+        <Container
+            sx={{
+                p: 4,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+            }}
+        >
             <Typography variant="h4" gutterBottom>
-                Generate an Image(dall-e-3)
+                Create Image
             </Typography>
             <TextField
-                label="Image Prompt"
-                variant="outlined"
+                label="enter your prompt"
+                variant="filled"
                 fullWidth
                 margin="normal"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
             />
-            <TextField
-                label="Revised Prompt"
-                variant="outlined"
-                fullWidth
-                multiline
-                maxRows={4}
-                margin="normal"
-                value={revisedPrompt}
-                disabled
-            />
 
-            <Box sx={{ display: "flex", gap: 2 }}>
+            <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
                 <FormControl sx={{ flexGrow: 1 }} margin="normal">
                     <InputLabel>{"Generate Image Size"}</InputLabel>
                     <Select
@@ -132,14 +140,35 @@ export const ImageTest = () => {
             <Button variant="contained" color="primary" onClick={handleGenerateImage} disabled={loading} sx={{ mt: 2 }}>
                 {loading ? "Generating..." : "Generate Image"}
             </Button>
-
-            {/* 이미지 표시 */}
             {imageUrl && (
-                <Box mt={4}>
-                    <Typography variant="h6">Generated Image:</Typography>
-                    <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", borderRadius: "8px" }} />
+                <Box
+                    sx={{
+                        marginTop: 2,
+                        display: "flex",
+                        flexDirection: "row",
+                        gap: 2,
+                        width: "100%",
+                        alignItems: "center",
+                    }}
+                >
+                    <TextField
+                        label="prompt refined"
+                        variant="outlined"
+                        fullWidth
+                        multiline
+                        maxRows={15}
+                        margin="normal"
+                        value={revisedPrompt}
+                        disabled
+                    />
+
+                    {/* 이미지 표시 */}
+                    <Box mt={4}>
+                        <Typography variant="h6">Generated Image:</Typography>
+                        <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", borderRadius: "8px" }} />
+                    </Box>
                 </Box>
             )}
-        </Box>
+        </Container>
     );
 };
