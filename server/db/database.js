@@ -63,10 +63,10 @@ db.serialize(() => {
         }
 
         const default_instructions = [
-            "You are a coding assistant. Always return code inside Markdown code blocks using triple backticks (```), and include the appropriate language identifier after the backticks (e.g., ```python, ```javascript). Do not return code outside of code blocks."
+            "When providing an answer that includes code, always put the code inside a Markdown code block using triple backticks (```) and include the appropriate language identifier (e.g., ```python, ```javascript). Any explanations or other text should be written outside of the code block. If your answer does not include code, just write your response as usual.",
         ];
         const jsonString = JSON.stringify(default_instructions);
-        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key, selected_model, max_message, system_message) VALUES (NULL, 'gpt-4o-2024-11-20', 3, '${jsonString}');`;
+        const insert_default_sql = `INSERT INTO ${TABLE_CONFIG} (openai_api_key, selected_model, max_message, system_message) VALUES (NULL, 'gpt-4.1', 5, '${jsonString}');`;
 
         // 테이블이 생성된 경우에만 삽입
         const get_all_sql = `SELECT * FROM ${TABLE_CONFIG}`;
