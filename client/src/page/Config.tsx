@@ -21,6 +21,7 @@ import { useConfigStore } from "../status/store";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { parseStringList } from "../util/JsonUtil";
+import { LeftComponent } from "../components/LeftComponent";
 
 const models = [
     "You can use models that are not in the list",
@@ -135,184 +136,182 @@ export const Config = () => {
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box> {`An error has occurred: ${error.message}`}</Box>;
     return (
-        <Container
-            maxWidth="lg"
+        <Box
             sx={{
-                paddingY: 4,
-                width: "100vw",
                 height: "100vh",
+                width: "100vw",
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                overflow: "hidden",
             }}
         >
-            <Typography variant="h3"> {"Config Settings"} </Typography>
+            <LeftComponent />
+
             <Box
                 sx={{
+                    width: "100%",
                     display: "flex",
                     flexDirection: "column",
-                    gap: 2,
-                    marginTop: 5,
-                    width: "80%",
+                    flex: 1,
+                    minWidth: 0,
+                    alignItems: "center",
+                    paddingY: 8,
                 }}
             >
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                    <TextField
-                        sx={{ flexGrow: 1 }}
-                        label="openai-api-key"
-                        margin="normal"
-                        variant="standard"
-                        onChange={(e) => {
-                            n_setConfig((v) => {
-                                return { ...v, openai_api_key: e.target.value };
-                            });
-                        }}
-                        disabled={!isEditable}
-                        value={
-                            isEditable
-                                ? n_config.openai_api_key
-                                : n_config.openai_api_key
-                                  ? "*".repeat(n_config.openai_api_key.length)
-                                  : ""
-                        }
-                        required
-                    />
-                </Box>
-                <Autocomplete
-                    freeSolo
-                    options={models}
-                    value={n_config.selected_model}
-                    onChange={(event, value) => {
-                        if (value) {
-                            n_setConfig((v) => {
-                                return { ...v, selected_model: value };
-                            });
-                        }
-                    }}
-                    onInputChange={(event, value) => {
-                        // 사용자가 TextField에 직접 입력했을 때 처리
-                        n_setConfig((v) => {
-                            return { ...v, selected_model: value };
-                        });
-                    }}
-                    renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            label="Model"
-                            variant="standard"
-                            margin="normal"
-                            disabled={!isEditable}
-                        />
-                    )}
-                    disabled={!isEditable}
-                />
-                <Box>
-                    <TextField
-                        type="number"
-                        label="maximum send message count"
-                        variant="standard"
-                        margin="normal"
-                        value={maxMessageInput}
-                        onChange={handleNumberInputChange}
-                        sx={{ width: "100%", marginBottom: 2 }}
-                        disabled={!isEditable}
-                    />
-                </Box>
-                <Box sx={{ mt: 1 }}>
-                    <Typography variant="h5" gutterBottom>
-                        System Instruction
-                    </Typography>
-
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                        <TextField
-                            fullWidth
-                            variant="filled"
-                            label="system instruction"
-                            value={instruct}
-                            onChange={(e) => setInstruct(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && isEditable) {
-                                    handleAdd();
-                                }
-                            }}
-                            disabled={!isEditable}
-                            slotProps={{
-                                input: {
-                                    sx: {
-                                        paddingTop: 1,
-                                    },
-                                },
-                            }}
-                        />
-                        <IconButton color="primary" onClick={handleAdd} disabled={!isEditable}>
-                            <AddIcon />
-                        </IconButton>
-                    </Stack>
-
-                    <List dense>
-                        {parseStringList(n_config.system_message).map((instruction, index) => (
-                            <ListItem
-                                key={index}
-                                secondaryAction={
-                                    isEditable && (
-                                        <IconButton edge="end" onClick={() => handleRemove(index)}>
-                                            <DeleteIcon />
-                                        </IconButton>
-                                    )
-                                }
-                            >
-                                <ListItemText primary={`• ${instruction}`} />
-                            </ListItem>
-                        ))}
-                    </List>
-                </Box>
+                <Typography variant="h4"> {"Config Settings"} </Typography>
                 <Box
                     sx={{
                         display: "flex",
-                        gap: 1,
+                        flexDirection: "column",
+                        gap: 2,
+                        marginTop: 4,
+                        width: "80%",
                     }}
                 >
-                    {isEditable ? (
-                        <Button
-                            variant="contained"
-                            onClick={handleRegistration}
-                            color="secondary"
-                            sx={{
-                                textTransform: "none",
-                                flex: 1,
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                        <TextField
+                            sx={{ flexGrow: 1 }}
+                            label="openai-api-key"
+                            margin="normal"
+                            variant="standard"
+                            onChange={(e) => {
+                                n_setConfig((v) => {
+                                    return { ...v, openai_api_key: e.target.value };
+                                });
                             }}
-                        >
-                            registration
-                        </Button>
-                    ) : (
-                        <Button
-                            variant="contained"
-                            onClick={() => {
-                                setIsEditable(true);
-                            }}
-                            sx={{
-                                textTransform: "none",
-                                flex: 1,
-                            }}
-                        >
-                            correction
-                        </Button>
-                    )}
-                    <Button
-                        variant="contained"
-                        onClick={() => {
-                            setIsEditable(false);
-                            n_setConfig(config);
+                            disabled={!isEditable}
+                            value={
+                                isEditable
+                                    ? n_config.openai_api_key
+                                    : n_config.openai_api_key
+                                      ? "*".repeat(n_config.openai_api_key.length)
+                                      : ""
+                            }
+                            required
+                        />
+                    </Box>
+                    <Autocomplete
+                        freeSolo
+                        options={models}
+                        value={n_config.selected_model}
+                        onChange={(event, value) => {
+                            if (value) {
+                                n_setConfig((v) => {
+                                    return { ...v, selected_model: value };
+                                });
+                            }
                         }}
+                        onInputChange={(event, value) => {
+                            // 사용자가 TextField에 직접 입력했을 때 처리
+                            n_setConfig((v) => {
+                                return { ...v, selected_model: value };
+                            });
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Model"
+                                variant="standard"
+                                margin="normal"
+                                disabled={!isEditable}
+                            />
+                        )}
+                        disabled={!isEditable}
+                    />
+                    <Box>
+                        <TextField
+                            type="number"
+                            label="maximum send message count"
+                            variant="standard"
+                            margin="normal"
+                            value={maxMessageInput}
+                            onChange={handleNumberInputChange}
+                            sx={{ width: "100%", marginBottom: 2 }}
+                            disabled={!isEditable}
+                        />
+                    </Box>
+                    <Box sx={{ mt: 1 }}>
+                        <Typography variant="h5" gutterBottom>
+                            System Instruction
+                        </Typography>
+
+                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+                            <TextField
+                                fullWidth
+                                variant="filled"
+                                label="system instruction"
+                                value={instruct}
+                                onChange={(e) => setInstruct(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && isEditable) {
+                                        handleAdd();
+                                    }
+                                }}
+                                disabled={!isEditable}
+                                slotProps={{
+                                    input: {
+                                        sx: {
+                                            paddingTop: 1,
+                                        },
+                                    },
+                                }}
+                            />
+                            <IconButton color="primary" onClick={handleAdd} disabled={!isEditable}>
+                                <AddIcon />
+                            </IconButton>
+                        </Stack>
+
+                        <List dense>
+                            {parseStringList(n_config.system_message).map((instruction, index) => (
+                                <ListItem
+                                    key={index}
+                                    secondaryAction={
+                                        isEditable && (
+                                            <IconButton edge="end" onClick={() => handleRemove(index)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        )
+                                    }
+                                >
+                                    <ListItemText primary={`• ${instruction}`} />
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Box>
+                    <Box
                         sx={{
-                            textTransform: "none",
-                            flex: 1,
+                            display: "flex",
+                            gap: 1,
                         }}
                     >
-                        cancel
-                    </Button>
+                        {isEditable ? (
+                            <Button
+                                variant="contained"
+                                onClick={handleRegistration}
+                                color="secondary"
+                                sx={{
+                                    textTransform: "none",
+                                    flex: 1,
+                                }}
+                            >
+                                registration
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="contained"
+                                onClick={() => {
+                                    setIsEditable(true);
+                                }}
+                                sx={{
+                                    textTransform: "none",
+                                    flex: 1,
+                                }}
+                            >
+                                correction
+                            </Button>
+                        )}
+                    </Box>
                 </Box>
             </Box>
-        </Container>
+        </Box>
     );
 };
