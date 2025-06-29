@@ -118,7 +118,9 @@ export const SubmitComponent = () => {
             return createChat(dto);
         },
         onSuccess: (data, variables, context) => {
-            queryClient.invalidateQueries({ queryKey: ["chats", safeRoomId] });
+            // console.log(variables.room_id);
+            // 주의) invalidateQueries String 하고 number 구분됨
+            queryClient.invalidateQueries({ queryKey: ["chats", String(variables.room_id)] });
         },
     });
 
@@ -127,7 +129,7 @@ export const SubmitComponent = () => {
             return updateChat(dto);
         },
         onSuccess: (data, variables, context) => {
-            queryClient.invalidateQueries({ queryKey: ["chats", safeRoomId] });
+            queryClient.invalidateQueries({ queryKey: ["chats", String(variables.room_id)] });
         },
     });
 
@@ -373,7 +375,7 @@ export const SubmitComponent = () => {
                 justifyContent: "flex-end",
                 alignItems: "center",
                 width: "100%",
-                borderRadius: "20px",
+                borderRadius: 20,
                 backgroundColor: isDragOver ? "#e0f7fa" : "white",
                 border: isDragOver ? "2px dashed #03a9f4" : "2px solid transparent",
                 transition: "border-color 0.2s, background-color 0.2s",
@@ -402,7 +404,7 @@ export const SubmitComponent = () => {
                 variant="outlined"
                 sx={{
                     "& .MuiOutlinedInput-root": {
-                        padding: "10px",
+                        padding: 2,
                         backgroundColor: "#f5f5f5",
                     },
                 }}

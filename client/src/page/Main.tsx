@@ -1,155 +1,58 @@
 import { Box, Container, IconButton, Typography } from "@mui/material";
-import { grey, blue } from "@mui/material/colors";
-import { LeftComponent } from "../components/LeftComponent";
-import Grid from "@mui/material/Grid2";
 import { useNavigate, useParams } from "react-router-dom";
 import { SubmitComponent } from "../components/SubmitComponent";
 import { ChatComponent } from "../components/ChatComponent";
-import ConfigIcon from "@mui/icons-material/Settings";
-import { useLeftCompOpenStore } from "../status/store";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import EditIcon from "@mui/icons-material/Edit";
-import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
-import { useEffect } from "react";
-import { CONFIG_URL, IMAGE_URL, MAIN_URL } from "../constants/path.const";
+import { LeftComponent } from "../components/LeftComponent";
 
 export const Main = () => {
     const { roomId } = useParams<{ roomId: string }>();
-    const isOpen = useLeftCompOpenStore((state) => state.isOpen);
-    const setIsOpen = useLeftCompOpenStore((state) => state.setIsOpen);
-    const navigate = useNavigate();
-
-    const configClickHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
-        navigate(CONFIG_URL);
-    };
-
-    const handleOpenToggle = () => {
-        setIsOpen(!isOpen);
-    };
-
-    const handleNewChat = () => {
-        navigate(MAIN_URL);
-    };
 
     return (
-        <Container
-            disableGutters
-            maxWidth="xl"
+        <Box
             sx={{
-                width: "98vw",
                 height: "100vh",
-                paddingTop: 1,
-                paddingBottom: 2,
+                width: "100vw",
+                display: "flex",
+                overflow: "hidden",
             }}
         >
-            <Grid
-                container
-                spacing={2}
+            <LeftComponent />
+            <Box
                 sx={{
                     height: "100%",
-                    width: "100%",
-                    position: "relative",
+                    flex: 1,
+                    minWidth: 0,
+                    display: "flex",
+                    flexDirection: "column",
                 }}
             >
-                <Box
-                    sx={{
-                        position: "absolute",
-                        top: 16, // 상단 여백
-                        right: 16, // 우측 여백
-                        zIndex: 1, // 다른 요소 위에 표시되도록
-                        display: "flex",
-                        alignItems: "center",
-                    }}
-                >
-                    <IconButton
-                        onClick={configClickHandler}
-                        size="large"
+                {roomId ? (
+                    <ChatComponent />
+                ) : (
+                    <Box
                         sx={{
-                            color: grey[900],
+                            height: "100%",
+                            width: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
                         }}
                     >
-                        <ConfigIcon />
-                    </IconButton>
-                </Box>
-                {isOpen ? (
-                    <>
-                        <Grid size={{ xs: 3 }} sx={{ height: "100%", transition: "width 0.3s" }}>
-                            <LeftComponent />
-                        </Grid>
-                        <Grid size={{ xs: 9 }} sx={{ height: "100%" }}>
-                            <Box
-                                sx={{
-                                    height: "100%",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: roomId ? "space-between" : "center",
-                                    alignItems: "center",
-                                }}
-                            >
-                                {roomId ? (
-                                    <ChatComponent />
-                                ) : (
-                                    <Typography variant="h3" sx={{ marginBottom: 3 }}>
-                                        {"Start Local TokenMeter"}
-                                    </Typography>
-                                )}
-                                <SubmitComponent />
-                            </Box>
-                        </Grid>
-                    </>
-                ) : (
-                    <>
-                        <Grid size={{ xs: 1 }}>
-                            <Box
-                                sx={{
-                                    padding: 1,
-                                    color: "black",
-                                    display: "flex",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <IconButton edge="start" color="inherit" onClick={handleOpenToggle}>
-                                    {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                                </IconButton>
-                                <Box>
-                                    <IconButton
-                                        color="inherit"
-                                        onClick={() => {
-                                            navigate(IMAGE_URL);
-                                        }}
-                                    >
-                                        <InsertPhotoIcon />
-                                    </IconButton>
-                                    <IconButton color="inherit" onClick={handleNewChat}>
-                                        <EditIcon />
-                                    </IconButton>
-                                </Box>
-                            </Box>
-                        </Grid>
-                        <Grid size={{ xs: 11 }} sx={{ height: "100%" }}>
-                            <Box
-                                sx={{
-                                    height: "100%",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    justifyContent: roomId ? "space-between" : "center",
-                                    alignItems: "center",
-                                }}
-                            >
-                                {roomId ? (
-                                    <ChatComponent />
-                                ) : (
-                                    <Typography variant="h3" sx={{ marginBottom: 3 }}>
-                                        {"Start Local TokenMeter"}
-                                    </Typography>
-                                )}
-                                <SubmitComponent />
-                            </Box>
-                        </Grid>
-                    </>
+                        <Typography variant="h3" sx={{ marginBottom: 1 }}>
+                            {"Start Token-Meter"}
+                        </Typography>
+                        <Box
+                            sx={{
+                                padding: 2,
+                                width: "70%",
+                            }}
+                        >
+                            <SubmitComponent />
+                        </Box>
+                    </Box>
                 )}
-            </Grid>
-        </Container>
+            </Box>
+        </Box>
     );
 };

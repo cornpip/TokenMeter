@@ -174,7 +174,7 @@ export const MessageBox = memo(({ v }: MessageBoxProps) => {
                     borderRadius: "16px", // Rounded corners
                     boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)", // Shadow effect
                     width: "fit-content",
-                    maxWidth: "80%",
+                    maxWidth: "60%",
                     color: "black", // Text color
                     margin: "10px",
                     flexDirection: "column",

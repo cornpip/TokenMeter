@@ -24,6 +24,9 @@ import { parseStringList } from "../util/JsonUtil";
 
 const models = [
     "You can use models that are not in the list",
+    "gpt-4.1",
+    "gpt-4.1-mini",
+    "gpt-4.1-nano",
     "chatgpt-4o-latest",
     "gpt-4o-2024-11-20",
     "gpt-4o-2024-08-06",

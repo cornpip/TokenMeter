@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, Container } from "@mui/material";
 import { api, getChatsbyRoomId, getRoomById } from "../api/api";
 import { ChatEntity, RoomEntity } from "../interface/entity";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import { useChatStore } from "../status/store";
 import axios from "axios";
 import { TokenMeterModal } from "../modal/TokenMeterModal";
 import { MAIN_URL } from "../constants/path.const";
+import { SubmitComponent } from "./SubmitComponent";
 
 export const ChatComponent = () => {
     console.log("@@@ ChatComponent");
@@ -46,7 +47,6 @@ export const ChatComponent = () => {
     });
 
     /**
-     * 분리하니까 함수 진행 파이프 라인을 작성자 아니면 모르겠는데?
      * SubmitComponet에서 create하면 -> ChatComponent에서 reRender (queryKey: chats)
      */
     const { isPending, error, data, isSuccess } = useQuery<ChatEntity[]>({
@@ -54,6 +54,7 @@ export const ChatComponent = () => {
         queryFn: async () => {
             const data = await getChatsbyRoomId(parseInt(safeRoomId));
             setChatData(data);
+            console.log(data);
             return data;
         },
     });
@@ -80,23 +81,62 @@ export const ChatComponent = () => {
         }
     }, [msgHistory]);
 
+    const maxWidth = 1200;
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box> {`An error has occurred: ${error.message}`}</Box>;
     return (
         <Box
             sx={{
                 width: "100%",
+                height: "100vh", // 또는 부모가 height: 100%여야 함
                 display: "flex",
                 flexDirection: "column",
-                overflow: "auto",
-                flexGrow: 1,
+                overflow: "hidden", // 가로 스크롤 방지
             }}
         >
-            {data.map((v, i) => (
-                <MessageBox key={i} v={v} />
-            ))}
-            <Box ref={messagesEndRef}></Box>
-            {/* modal */}
+            {/* 메시지 리스트 - 스크롤 가능한 부분 */}
+            <Box
+                sx={{
+                    flex: 1, // 남은 모든 공간 차지
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                }}
+            >
+                <Box
+                    sx={{
+                        maxWidth: maxWidth,
+                        width: "100%",
+                        margin: "0 auto",
+                        paddingX: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        boxSizing: "border-box",
+                    }}
+                >
+                    {data.map((v, i) => (
+                        <MessageBox key={i} v={v} />
+                    ))}
+                    <Box ref={messagesEndRef} />
+                </Box>
+            </Box>
+
+            {/* 항상 아래에 붙어있는 Submit */}
+            <Box
+                sx={{
+                    padding: 2,
+                    maxWidth: maxWidth,
+                    width: "100%",
+                    margin: "0 auto",
+                    boxSizing: "border-box",
+                    backgroundColor: "#fff",
+                }}
+            >
+                <SubmitComponent />
+            </Box>
+
+            {/* Modal은 위치 상관없음 */}
             <TokenMeterModal />
         </Box>
     );

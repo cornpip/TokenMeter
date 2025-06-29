@@ -6,6 +6,7 @@ import { CreateImage } from "../components/Image/CreateImage";
 import { useNavigate } from "react-router-dom";
 import { MAIN_URL } from "../constants/path.const";
 import { CreateImageEdit } from "../components/Image/CreateImageEdit";
+import { SideBar } from "../components/side_bar/SideBar";
 
 const apiOptions = ["createImage", "createImageEdit"] as const;
 type ApiOption = (typeof apiOptions)[number];
@@ -53,61 +54,19 @@ export const ImageGeneration = () => {
 
     return (
         <Box sx={{ display: "flex", minHeight: "100vh" }}>
-            <ResizableBox
-                width={drawerWidth}
-                axis="x"
-                minConstraints={[180, 0]}
-                maxConstraints={[400, 0]}
-                resizeHandles={["e"]}
-                onResizeStop={handleResizeStop}
-                handle={
-                    <span
-                        style={{
-                            position: "absolute",
-                            right: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: "5px",
-                            cursor: "col-resize",
-                            background: "#ccc",
-                        }}
-                    />
-                }
-                style={{
-                    boxSizing: "border-box",
-                    backgroundColor: "#f5f5f5",
-                    height: "100%",
-                }}
-            >
-                <Box sx={{ width: "100%", height: "100%" }}>
-                    <Box
-                        sx={{
-                            paddingTop: 5,
-                            paddingBottom: 2,
-                            cursor: "pointer",
-                            "&:hover": { backgroundColor: "#f0f0f0" }, // hover 효과도 가능
-                        }}
-                        onClick={() => navigate(`${MAIN_URL}`)}
-                    >
-                        <Typography variant="h6" textAlign="center" gutterBottom>
-                            TokenMeter
-                            <br />
-                            (Image)
-                        </Typography>
-                    </Box>
-                    <List>
-                        {apiOptions.map((option) => (
-                            <ListItemButton
-                                key={option}
-                                selected={selectedApi === option}
-                                onClick={() => setSelectedApi(option)}
-                            >
-                                <ListItemText primary={getApiOptionsTitle(option)} />
-                            </ListItemButton>
-                        ))}
-                    </List>
-                </Box>
-            </ResizableBox>
+            <SideBar>
+                <List>
+                    {apiOptions.map((option) => (
+                        <ListItemButton
+                            key={option}
+                            selected={selectedApi === option}
+                            onClick={() => setSelectedApi(option)}
+                        >
+                            <ListItemText primary={getApiOptionsTitle(option)} />
+                        </ListItemButton>
+                    ))}
+                </List>
+            </SideBar>
             <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
                 {renderContent()}
             </Box>

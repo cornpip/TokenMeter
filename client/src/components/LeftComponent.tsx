@@ -1,4 +1,4 @@
-import { Box, Container, IconButton, Menu, MenuItem, TextField, Typography } from "@mui/material";
+import { Box, Container, IconButton, List, Menu, MenuItem, TextField, Typography } from "@mui/material";
 import { deleteRoom, getRooms, updateRoom } from "../api/api";
 import { RoomEntity } from "../interface/entity";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -6,12 +6,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { RoomDeleteResDto, RoomUpdateResDto } from "../interface/dto";
-import EditIcon from "@mui/icons-material/Edit";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useLeftCompOpenStore } from "../status/store";
-import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import { IMAGE_URL, MAIN_URL } from "../constants/path.const";
+import { SideBar } from "./side_bar/SideBar";
 
 // RoomItem 컴포넌트의 prop 타입 정의
 interface RoomItemProps {
@@ -208,96 +205,33 @@ export const LeftComponent = () => {
         handleMenuClose();
     };
 
-    const handleOpenToggle = () => {
-        setIsOpen(!isOpen);
-    };
-
-    const handleNewChat = () => {
-        setSelectedItemId(null);
-        navigate(MAIN_URL);
-    };
-
     useEffect(() => {
         if (safeRoomId) {
             setSelectedItemId(parseInt(safeRoomId));
         }
-    }, []);
+    }, [roomId]);
 
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box>'An error has occurred: ' + error.message</Box>;
     return (
-        <Container
-            disableGutters={true}
-            sx={{
-                padding: 1,
-                bgcolor: "#E7EBEF",
-                height: "100%",
-                width: "100%",
-                overflowY: "auto",
-                overflowX: "auto",
-                maxHeight: "100%",
-                // 스크롤바 스타일
-                "&::-webkit-scrollbar": {
-                    width: "8px", // 세로 스크롤바의 너비
-                },
-                "&::-webkit-scrollbar-track": {
-                    background: "#E7EBEF", // 스크롤바 배경 색상
-                },
-                "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: "#888", // 스크롤바 색상
-                    borderRadius: "10px", // 둥글게 만들기
-                },
-                "&::-webkit-scrollbar-thumb:hover": {
-                    backgroundColor: "#555", // 마우스를 올렸을 때 색상 변화
-                },
-                scrollbarWidth: "thin",
-                scrollbarColor: "#888 #E7EBEF",
-            }}
-        >
-            <Box
-                sx={{
-                    padding: 1,
-                    color: "black",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    borderBottom: "1px solid #ccc",
-                }}
-            >
-                <IconButton edge="start" color="inherit" onClick={handleOpenToggle}>
-                    {isOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-                </IconButton>
-                <Box>
-                    <IconButton
-                        color="inherit"
-                        onClick={() => {
-                            navigate(IMAGE_URL);
-                        }}
-                    >
-                        <InsertPhotoIcon />
-                    </IconButton>
-                    <IconButton color="inherit" onClick={handleNewChat}>
-                        <EditIcon />
-                    </IconButton>
-                </Box>
-            </Box>
-
-            <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                {data && data.map((v, i) => (
-                    <RoomItem
-                        key={v.id}
-                        roomData={v}
-                        selectedItemId={selectedItemId}
-                        hoveredItemId={hoveredItemId}
-                        isEditableTitleId={isEditableTitleId}
-                        safeRoomId={safeRoomId}
-                        onMouseEnter={() => handleMouseEnter(v.id)}
-                        onMouseLeave={handleMouseLeave}
-                        onClick={() => handleRoomClick(v.id)}
-                        onIconButtonClick={handleIconButtonClick}
-                        onBlurHandler={handleRenameBlur}
-                    />
-                ))}
+        <SideBar>
+            <List>
+                {data &&
+                    data.map((v, i) => (
+                        <RoomItem
+                            key={v.id}
+                            roomData={v}
+                            selectedItemId={selectedItemId}
+                            hoveredItemId={hoveredItemId}
+                            isEditableTitleId={isEditableTitleId}
+                            safeRoomId={safeRoomId}
+                            onMouseEnter={() => handleMouseEnter(v.id)}
+                            onMouseLeave={handleMouseLeave}
+                            onClick={() => handleRoomClick(v.id)}
+                            onIconButtonClick={handleIconButtonClick}
+                            onBlurHandler={handleRenameBlur}
+                        />
+                    ))}
                 <Menu
                     anchorEl={menuAnchorEl}
                     closeAfterTransition={true} //false로 하면 pick한데 다른데를 누를 때 뜨고, true하면 pick한데를 누를 때 한 번 뜨네
@@ -315,7 +249,7 @@ export const LeftComponent = () => {
                     <MenuItem onClick={() => handleRenameOption()}>Rename</MenuItem>
                     <MenuItem onClick={() => handleDeleteOption()}>Delete</MenuItem>
                 </Menu>
-            </Box>
-        </Container>
+            </List>
+        </SideBar>
     );
 };
