@@ -2,13 +2,21 @@ import axios from "axios";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCreateDto, ChatUpdateDto, ConfigUpdateDto } from "../interface/dto";
 
-const isDevMode = import.meta.env.VITE_DEV_MODE == "1" ? true : false;
+const devMode = import.meta.env.VITE_DEV_MODE;
 const API_PORT = import.meta.env.VITE_API_PORT;
 const AI_PORT = import.meta.env.VITE_AI_PORT;
 
-// docker(prod) = 상대 경로 사용
-const _baseUrl = isDevMode ? `http://localhost:${API_PORT}` : `/token_meter/api`;
-const _aiBaseUrl = isDevMode ? `http://localhost:${AI_PORT}` : `/token_meter/ai`;
+let _baseUrl;
+let _aiBaseUrl;
+if (devMode == "1") // dev
+    _baseUrl =  `http://localhost:${API_PORT}`;
+    _aiBaseUrl = `http://localhost:${AI_PORT}`;
+if (devMode == "0") // docker(prod), 상대 경로 사용
+    _baseUrl =  `/token_meter/api`;
+    _aiBaseUrl = `/token_meter/ai`;
+if (devMode == "2") // mock data
+    _baseUrl =  `/`;
+    _aiBaseUrl = `/`;
 
 export const api = axios.create({
     baseURL: _baseUrl,

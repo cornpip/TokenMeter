@@ -23,7 +23,7 @@ const TokenMeter: React.FC<TokenMeterProps> = ({ v }) => {
     const isOpen = useTokenMeterModalStore((s) => s.open);
     const setIsOpen = useTokenMeterModalStore((s) => s.setOpen);
     const clickHandler = () => {
-        setIsOpen(true, v);
+        setIsOpen(true, v); // open 할 때 ChatEntity를 content로 줌
     };
     return (
         <Box
