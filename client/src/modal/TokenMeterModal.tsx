@@ -15,8 +15,8 @@ export const TokenMeterModal: React.FC = () => {
 
     useEffect(() => {
         if (content) {
+            // console.log(content);
             // let msgHistory: ChatCompletionMessageParam[] = JSON.parse(content.msg_history);
-            // console.log(msgHistory);
             setMsgHistory(JSON.parse(content.msg_history));
         }
     }, [isOpen]);

@@ -241,6 +241,77 @@ export const SubmitComponent = () => {
     };
 
     const handleSendMessage = async () => {
+        // ================================== msw 처리 ==================================
+        if (import.meta.env.VITE_DEV_MODE == 2) {
+            let n_msgHistory: ChatCompletionMessageParam[] = [];
+
+            // system message settings
+            const systemMsgList = parseStringList(config.system_message);
+            for (const systemMsg of systemMsgList) {
+                n_msgHistory.push({ role: "system", content: systemMsg });
+            }
+
+            if (safeRoomId === "0") {
+                await createRoomMutation.mutateAsync(getTitle(message)).then((res) => {
+                    safeRoomId = res.data.id;
+                    navigate(`./${safeRoomId}`);
+                });
+            } else {
+                if (config.max_message > 1) {
+                    n_msgHistory = [...n_msgHistory, ...msgHistory.slice(-1 * (config.max_message - 1))];
+                }
+            }
+
+            // messaage
+            n_msgHistory.push({ role: "user", content: message });
+
+            // 질문 요청(db)
+            const n_seq = chatData.length ? chatData[chatData.length - 1].sequence + 1 : 0;
+            const db_question: ChatCreateDto = {
+                time: new Date().toISOString(),
+                room_id: parseInt(safeRoomId),
+                message: message,
+                is_answer: 0,
+                sequence: n_seq,
+                used_model: config.selected_model,
+            };
+            const db_question_res_data: { id: number } = (await createChatMutation.mutateAsync(db_question)).data;
+
+            /*
+            openAi response mock
+            */
+            const completionContentMock = "hello";
+            n_msgHistory.push({ role: "assistant", content: completionContentMock });
+
+            // 질문 응답(db)
+            const db_answer: ChatCreateDto = {
+                time: new Date().toISOString(),
+                room_id: parseInt(safeRoomId),
+                message: completionContentMock,
+                is_answer: 1,
+                sequence: n_seq === 0 ? 1 : n_seq + 1,
+                used_model: config.selected_model,
+                msg_history: JSON.stringify(n_msgHistory, null, 4),
+                token_meter_prompt: 30,
+                token_meter_completion: 40,
+                token_meter_total: 70,
+            };
+            createChatMutation.mutate(db_answer);
+
+            if (db_question_res_data.id) {
+                updateChatMutation.mutate({
+                    chatId: db_question_res_data.id,
+                    msg_history: JSON.stringify(n_msgHistory, null, 4),
+                    token_meter_prompt: 30,
+                    token_meter_completion: 40,
+                    token_meter_total: 70,
+                });
+            }
+            setMessage("");
+            return;
+        } 
+        
+        // ================================== 진짜 로직 ==================================
         if (message.trim() && openai) {
             let n_msgHistory: ChatCompletionMessageParam[] = [];
             // system message settings
