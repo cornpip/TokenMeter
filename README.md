@@ -1,7 +1,15 @@
-# TokenMeter  
-- Use the OpenAI API locally just like ChatGPT. 
-- Logs data to a local database and tracks token usage. 
+# TokenMeter 
+Use the OpenAI API locally just like ChatGPT.   
+Logs data to a local database and tracks token usage. 
  
+## Example Mock Site
+__[https://cornpip.github.io/TokenMeter/](https://cornpip.github.io/TokenMeter/)__  
+
+To use Token-Meter, an OpenAI API key is needed.  
+Please use this as a reference — it’s a mock site.
+
+
+
 ## Run with Docker
  
 ### 1. Requirements 
@@ -11,7 +19,7 @@
 ### 2. How to Run 
 1. Download or copy the [`docker-compose.yml`](https://github.com/cornpip/TokenMeter/blob/master/docker-compose.yml) file 
 2. Run the command `docker compoes up`  
-(If you’ve run this before and want the latest images, please run `docker compose pull` before `docker compose up`)
+(`docker compose pull` before `docker compose up` is the latest update.)
 
 3. __Service URL: http://localhost/token_meter/viewer/main__ 
 
@@ -40,7 +48,8 @@ To change this, modify {your_port} in the docker-compose.yml file:
 2. npm run start
 3. __Service URL: http://localhost:7777/token_meter/viewer/main__
 
-default port, Server: `7776`, client: `7777`
+default port )  
+token_ai_server: `7775`, token_server: `7776`, token_client: `7777`
 
  
 ## SQLite Database 
@@ -51,17 +60,13 @@ default port, Server: `7776`, client: `7777`
  
 ## How to Use
  
-![1](./readme_img/1.png)   
-If no database exists, a new one is automatically created when the app starts, and all chat history and settings will be saved there. 
- 
-<br><br> 
- 
-![1](./readme_img/2.png)   
+![1](./readme_img/config.png)   
 
 __Initial settings:__  
-openai-api-key – You need to register your API key.   
-Model – Select an existing model or manually input a new one when available.   
-Maximum send message count – Determines how much chat history (excluding the assistant’s upcoming replies) is included in each message sent to the API.
+__openai-api-key__ – You need to register your API key.   
+__Model__ – Select an existing model or manually input a new one when available.   
+__Maximum send message count__ – Determines how much chat history (excluding the assistant’s upcoming replies) is included in each message sent to the API.  
+__system instruction__ – Add a default system instruction for GPT
 
 __Example: Maximum Send Message Count__
 ``` 
@@ -80,21 +85,21 @@ Tip: As of February 2024, no automatic token optimization is available. A messag
 Refer to the OpenAI Pricing Page for token costs per model. [OpenAI Pricing Page](https://platform.openai.com/docs/pricing)
  
 <br><br> 
- 
-![1](./readme_img/3.png)   
+
+![1](./readme_img/meter_q.png)    
+![1](./readme_img/meter_a.png)   
 After a response is generated, the token count is displayed next to each message:
 - The number beside a question is the total token usage (history + current message).
 - The number beside an answer represents the token usage of the response only.
  
 <br><br> 
  
-![1](./readme_img/4.png)   
+![1](./readme_img/meter_modal.png)   
 Click on a token count to view the message range used and detailed token stats.
  
 <br><br> 
  
 ![1](./readme_img/7.png)   
-![1](./readme_img/8.png)   
 You can attach image files via drag-and-drop or by clicking the paperclip icon. 
  
 Note: As of February 2024, attachments are not saved to chat history. However, their content is included in token calculations.
@@ -103,22 +108,22 @@ Note: As of February 2024, attachments are not saved to chat history. However, t
 <br><br> 
  
 ![1](./readme_img/9.png)   
-During response generation, the input box is disabled.
+During response generation, the input box is disabled.  
 Real-time (streaming) responses are planned for a future update.
  
 <br><br> 
  
-![1](./readme_img/5.png)   
-You can delete a chat room as needed. 
+![1](./readme_img/create_image.png)   
+Click the "Token-Meter (Image)" menu to go to the image generation page.
  
-<br><br> 
- 
-![1](./readme_img/6.png)   
-Click the image icon on the top menu or go to /token_meter/viewer/image to open the image generation page.
- 
-1. Enter a text prompt
-2. Choose image size & quality
-3. The "Revised Prompt" displays the final version used (may be modified to improve results)
+- Enter a text prompt
+- Choose image size & quality
+- The "prompt refined" shows the final prompt used, which may be modified to improve results.
+
+<br>
+
+![1](./readme_img/inpaint_image.png)   
+The mask generator uses the Token-Meter-AI, and image is created using the OpenAI API.
 
 ## Questions & Feedback
 I'm continuously improving TokenMeter and truly value your input.  
