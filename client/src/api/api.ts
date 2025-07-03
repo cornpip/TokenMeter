@@ -6,17 +6,22 @@ const devMode = import.meta.env.VITE_DEV_MODE;
 const API_PORT = import.meta.env.VITE_API_PORT;
 const AI_PORT = import.meta.env.VITE_AI_PORT;
 
-let _baseUrl;
-let _aiBaseUrl;
-if (devMode == "1") // dev
-    _baseUrl =  `http://localhost:${API_PORT}`;
-    _aiBaseUrl = `http://localhost:${AI_PORT}`;
-if (devMode == "0") // docker(prod), 상대 경로 사용
-    _baseUrl =  `/token_meter/api`;
+let _baseUrl: string;
+let _aiBaseUrl: string;
+
+if (devMode === "0") {
+    // docker(prod), 상대 경로 사용
+    _baseUrl = `/token_meter/api`;
     _aiBaseUrl = `/token_meter/ai`;
-if (devMode == "2") // mock data
-    _baseUrl =  `/`;
+} else if (devMode == "2") {
+    // mock
+    _baseUrl = `/`;
     _aiBaseUrl = `/`;
+} else {
+    // dev
+    _baseUrl = `http://localhost:${API_PORT}`;
+    _aiBaseUrl = `http://localhost:${AI_PORT}`;
+}
 
 export const api = axios.create({
     baseURL: _baseUrl,

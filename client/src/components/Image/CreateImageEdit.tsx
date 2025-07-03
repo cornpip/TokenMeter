@@ -111,6 +111,12 @@ export const CreateImageEdit = () => {
     };
 
     const handleSubmit = async () => {
+        // gh-page, msw 경우 제외
+        if (import.meta.env.MODE === "gh" || import.meta.env.VITE_DEV_MODE === "2") {
+            alert("Mask generation requires the TokenMeter AI server. Please install it before using this feature.");
+            return;
+        }
+
         if (!imageFile || clickPoints.length === 0 || clickLabels.length === 0) return;
         setResultUrl(""); // sam result
         setResizedMaskImageUrl("");

@@ -54,7 +54,6 @@ export const ChatComponent = () => {
         queryFn: async () => {
             const data = await getChatsbyRoomId(parseInt(safeRoomId));
             setChatData(data);
-            console.log(data);
             return data;
         },
     });
@@ -115,9 +114,16 @@ export const ChatComponent = () => {
                         boxSizing: "border-box",
                     }}
                 >
-                    {data.map((v, i) => (
-                        <MessageBox key={i} v={v} />
-                    ))}
+                    {data.map((v, i) =>
+                        i === 0 ? (
+                            // 첫 번째 message box top margin
+                            <Box key={i} mt={7}>
+                                <MessageBox v={v} />
+                            </Box>
+                        ) : (
+                            <MessageBox key={i} v={v} />
+                        )
+                    )}
                     <Box ref={messagesEndRef} />
                 </Box>
             </Box>
