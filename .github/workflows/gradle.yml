@@ -1,0 +1,90 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - master  # 배포 브랜치
+      - action-test
+
+jobs:
+  client-build-and-docker-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 리포지토리 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Node 설치 및 React 빌드
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: client
+
+      - name: Build client
+        run: npm run build
+        working-directory: client
+
+      # package.json에서 버전 추출
+      - name: Get client version from package.json
+        id: get_version
+        run: |
+          VERSION=$(jq -r .version client/package.json)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      # Docker 로그인
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Docker 이미지 빌드 (버전 태그)
+      - name: Build Docker image with version and latest tag
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/token-meter-nginx:${{ steps.get_version.outputs.VERSION }} -t ${{ secrets.DOCKER_USERNAME }}/token-meter-nginx:latest .
+        working-directory: client
+
+      # Docker 이미지 푸시 (버전 및 latest)
+      - name: Push Docker images
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/token-meter-nginx:${{ steps.get_version.outputs.VERSION }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/token-meter-nginx:latest
+
+  server-docker-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 리포지토리 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Node 설치 및 의존성 설치 (서버)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install server dependencies
+        run: npm install
+        working-directory: server
+
+      # server/package.json에서 버전 추출
+      - name: Get server version from package.json
+        id: get_version
+        run: |
+          VERSION=$(jq -r .version server/package.json)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      # Docker 로그인
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Docker 이미지 빌드 (버전 및 latest 태그)
+      - name: Build Server Docker image with version and latest tags
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/token-meter-server:${{ steps.get_version.outputs.VERSION }} -t ${{ secrets.DOCKER_USERNAME }}/token-meter-server:latest .
+        working-directory: server
+
+      # Docker 이미지 푸시
+      - name: Push Server Docker images
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/token-meter-server:${{ steps.get_version.outputs.VERSION }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/token-meter-server:latest
