@@ -87,6 +87,7 @@ export const SubmitComponent = () => {
     const msgHistory = useChatStore((state) => state.msgHistory);
     const { config, setConfig, resetConfig } = useConfigStore();
     const [openai, setOpenai] = useState<OpenAI>();
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const { isPending, error, data, isSuccess } = useQuery<ConfigEntity[]>({
         queryKey: ["configs"],
@@ -242,7 +243,7 @@ export const SubmitComponent = () => {
 
     const handleSendMessage = async () => {
         // ================================== msw 처리 ==================================
-        if (import.meta.env.VITE_DEV_MODE == 2) {
+        if (message.trim() && import.meta.env.VITE_DEV_MODE == 2) {
             let n_msgHistory: ChatCompletionMessageParam[] = [];
 
             // system message settings
@@ -280,7 +281,8 @@ export const SubmitComponent = () => {
             /*
             openAi response mock
             */
-            const completionContentMock = "hello";
+            const completionContentMock =
+                "Please install TokenMeter locally and add your OpenAI API key in the configuration settings before using it";
             n_msgHistory.push({ role: "assistant", content: completionContentMock });
 
             // 질문 응답(db)
@@ -309,8 +311,8 @@ export const SubmitComponent = () => {
             }
             setMessage("");
             return;
-        } 
-        
+        }
+
         // ================================== 진짜 로직 ==================================
         if (message.trim() && openai) {
             let n_msgHistory: ChatCompletionMessageParam[] = [];
@@ -435,6 +437,33 @@ export const SubmitComponent = () => {
         }
     };
 
+    // 포커싱 안된 상태에서 enter 시 텍스트 입력 필드로
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Enter") {
+                const active = document.activeElement;
+
+                // 현재 포커스된 요소 확인
+                // 일부 WYSIWYG 편집기나 커스텀 입력기는 <div contenteditable="true">로 구현되어 있음
+                const isTypingElement =
+                    active instanceof HTMLInputElement ||
+                    active instanceof HTMLTextAreaElement ||
+                    (active && active.getAttribute("contenteditable") === "true");
+
+                // 아무 곳도 focus 안 되어 있을 때만 TextField에 focus 주고 Enter 무시
+                if (!isTypingElement) {
+                    inputRef.current?.focus();
+                    e.preventDefault(); // 이때만 막음!
+                }
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+
     if (isPending) return <Box>'Loading...'</Box>;
     if (error) return <Box> {`An error has occurred: ${error.message}`}</Box>;
     return (
@@ -467,6 +496,7 @@ export const SubmitComponent = () => {
                 </ImagePreviewList>
             )}
             <TextField
+                inputRef={inputRef}
                 fullWidth
                 multiline
                 disabled={textFieldOff}
