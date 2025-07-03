@@ -1,15 +1,18 @@
 {
   "name": "token_meter",
   "private": true,
-  "version": "3.1.0",
+  "version": "3.2.0",
   "type": "module",
+  "homepage": "https://cornpip.github.io/TokenMeter",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 7777",
     "build": "tsc -b && vite build",
+    "build-gh": "tsc -b && vite build --mode gh",
     "lint": "eslint .",
     "preview": "vite preview --host 0.0.0.0 --port 7777",
     "format": "prettier --write .",
-    "build_msw": "npx msw init public/ --save"
+    "build_msw": "npx msw init public/ --save",
+    "deploy-gh": "npm run build-gh && cpy dist/index.html ./ --rename=404.html && gh-pages -d dist"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
@@ -43,6 +46,8 @@
     "@types/react-resizable": "^3.0.8",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vitejs/plugin-react": "^4.3.1",
+    "gh-pages": "^6.3.0",
+    "cpy-cli": "^5.0.0",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",

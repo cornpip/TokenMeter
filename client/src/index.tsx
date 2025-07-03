@@ -11,7 +11,12 @@ const queryClient = new QueryClient();
 async function prepareApp() {
     if (import.meta.env.VITE_DEV_MODE === "2") {
         const { worker } = await import("./mock/browser");
-        await worker.start();
+        const base = import.meta.env.MODE === "gh" ? "/TokenMeter" : "";
+        await worker.start({
+            serviceWorker: {
+                url: `${base}/mockServiceWorker.js`,
+            },
+        });
     }
 }
 

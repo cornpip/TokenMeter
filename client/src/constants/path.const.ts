@@ -1,4 +1,6 @@
-const prefix = "/token_meter/viewer";
+const isGhPage = import.meta.env.MODE === "gh";
+
+const prefix = isGhPage ? "/TokenMeter/viewer" : "/token_meter/viewer";
 
 export const MAIN_URL = `${prefix}/main`;
 export const CONFIG_URL = `${prefix}/config`;
