@@ -67,7 +67,16 @@ export const ImageGeneration = () => {
                     ))}
                 </List>
             </SideBar>
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Box
+                component="main"
+                sx={{
+                    height: "100%",
+                    flex: 1,
+                    minWidth: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                }}
+            >
                 {renderContent()}
             </Box>
         </Box>

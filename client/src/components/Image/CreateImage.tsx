@@ -90,85 +90,103 @@ export const CreateImage = () => {
     return (
         <Container
             sx={{
-                p: 4,
+                width: "100%",
+                height: "100vh", // 또는 부모가 height: 100%여야 함
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
+                overflow: "hidden", // 가로 스크롤 방지
+                overflowY: "auto",
+                marginTop: 7,
             }}
         >
-            <Typography variant="h4" gutterBottom>
-                Create Image
-            </Typography>
-            <TextField
-                label="enter your prompt"
-                variant="filled"
-                fullWidth
-                margin="normal"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-            />
+            <Box
+                sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center",
+                }}
+            >
+                <Typography variant="h4" gutterBottom>
+                    Create Image
+                </Typography>
+                <TextField
+                    label="enter your prompt"
+                    variant="filled"
+                    fullWidth
+                    margin="normal"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                />
 
-            <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
-                <FormControl sx={{ flexGrow: 1 }} margin="normal">
-                    <InputLabel>{"Generate Image Size"}</InputLabel>
-                    <Select
-                        value={size}
-                        onChange={(e) => setSize(e.target.value as Resolution)}
-                        label={"Generate Image Size"}
-                        variant="standard"
-                    >
-                        <MenuItem value="1024x1024">1024x1024</MenuItem>
-                        <MenuItem value="1024x1792">1024x1792</MenuItem>
-                        <MenuItem value="1792x1024">1792x1024</MenuItem>
-                    </Select>
-                </FormControl>
-                <FormControl sx={{ flexGrow: 1 }} margin="normal">
-                    <InputLabel>{"Generate Image Quality"}</InputLabel>
-                    <Select
-                        value={quality}
-                        onChange={(e) => setQuality(e.target.value)}
-                        variant="standard"
-                        label={"Generate Image Quality"}
-                    >
-                        <MenuItem value="standard">standard</MenuItem>
-                        <MenuItem value="hd">hd(high quality)</MenuItem>
-                    </Select>
-                </FormControl>
-            </Box>
-
-            <Button variant="contained" color="primary" onClick={handleGenerateImage} disabled={loading} sx={{ mt: 2 }}>
-                {loading ? "Generating..." : "Generate Image"}
-            </Button>
-            {imageUrl && (
-                <Box
-                    sx={{
-                        marginTop: 2,
-                        display: "flex",
-                        flexDirection: "row",
-                        gap: 2,
-                        width: "100%",
-                        alignItems: "center",
-                    }}
-                >
-                    <TextField
-                        label="prompt refined"
-                        variant="outlined"
-                        fullWidth
-                        multiline
-                        maxRows={15}
-                        margin="normal"
-                        value={revisedPrompt}
-                        disabled
-                    />
-
-                    {/* 이미지 표시 */}
-                    <Box mt={4}>
-                        <Typography variant="h6">Generated Image:</Typography>
-                        <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", borderRadius: "8px" }} />
-                    </Box>
+                <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
+                    <FormControl sx={{ flexGrow: 1 }} margin="normal">
+                        <InputLabel>{"Generate Image Size"}</InputLabel>
+                        <Select
+                            value={size}
+                            onChange={(e) => setSize(e.target.value as Resolution)}
+                            label={"Generate Image Size"}
+                            variant="standard"
+                        >
+                            <MenuItem value="1024x1024">1024x1024</MenuItem>
+                            <MenuItem value="1024x1792">1024x1792</MenuItem>
+                            <MenuItem value="1792x1024">1792x1024</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl sx={{ flexGrow: 1 }} margin="normal">
+                        <InputLabel>{"Generate Image Quality"}</InputLabel>
+                        <Select
+                            value={quality}
+                            onChange={(e) => setQuality(e.target.value)}
+                            variant="standard"
+                            label={"Generate Image Quality"}
+                        >
+                            <MenuItem value="standard">standard</MenuItem>
+                            <MenuItem value="hd">hd(high quality)</MenuItem>
+                        </Select>
+                    </FormControl>
                 </Box>
-            )}
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleGenerateImage}
+                    disabled={loading}
+                    sx={{ mt: 2 }}
+                >
+                    {loading ? "Generating..." : "Generate Image"}
+                </Button>
+                {imageUrl && (
+                    <Box
+                        sx={{
+                            marginTop: 2,
+                            display: "flex",
+                            flexDirection: "row",
+                            gap: 2,
+                            width: "100%",
+                            alignItems: "center",
+                        }}
+                    >
+                        <TextField
+                            label="prompt refined"
+                            variant="outlined"
+                            fullWidth
+                            multiline
+                            maxRows={15}
+                            margin="normal"
+                            value={revisedPrompt}
+                            disabled
+                        />
+
+                        {/* 이미지 표시 */}
+                        <Box mt={4}>
+                            <Typography variant="h6">Generated Image:</Typography>
+                            <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", borderRadius: "8px" }} />
+                        </Box>
+                    </Box>
+                )}
+            </Box>
         </Container>
     );
 };

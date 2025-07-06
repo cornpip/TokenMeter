@@ -344,7 +344,8 @@ export const CreateImageEdit = () => {
                 mask: maskFile,
                 prompt: prompt,
                 n: 1,
-                size: "512x512",
+                model: "dall-e-2",
+                size: size,
                 response_format: "url",
             });
 
@@ -361,235 +362,250 @@ export const CreateImageEdit = () => {
     return (
         <Container
             sx={{
-                p: 4,
+                width: "100%",
+                height: "100vh", // 또는 부모가 height: 100%여야 함
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
-                textAlign: "center",
+                overflow: "hidden", // 가로 스크롤 방지
+                overflowY: "auto",
+                marginTop: 7,
             }}
         >
-            <Typography
-                variant="h4"
-                gutterBottom
-                sx={{
-                    marginBottom: 3,
-                }}
-            >
-                Edit Image(inpaint)
-            </Typography>
             <Box
                 sx={{
+                    flex: 1,
                     display: "flex",
                     flexDirection: "column",
-                    width: "100%",
-                    gap: 2,
-                    marginBottom: 60,
+                    alignItems: "center",
+                    textAlign: "center",
                 }}
             >
-                {!previewUrl ? (
-                    <Box
-                        onClick={handleClickArea}
-                        onDrop={handleDrop}
-                        onDragOver={handleDragOver}
-                        onDragEnter={handleDragEnter}
-                        onDragLeave={handleDragLeave}
-                        sx={{
-                            border: "2px dashed #ccc",
-                            borderRadius: 2,
-                            p: 6,
-                            textAlign: "center",
-                            color: "#555",
-                            cursor: "pointer",
-                            userSelect: "none",
-                            backgroundColor: isDragging ? "#e0f7fa" : "transparent", // 드래그 중일 때 배경색 변경
-                            borderColor: isDragging ? "#00bcd4" : "#ccc", // 테두리 색상 변경
-                            transition: "background-color 0.3s, border-color 0.3s",
-                        }}
-                    >
-                        <Typography variant="body1" color="inherit" sx={{ mb: 1 }}>
-                            click or drag an image
-                        </Typography>
-                        <Typography variant="caption" color="textSecondary">
-                            (optional)
-                        </Typography>
-                        <input ref={inputRef} type="file" accept="image/*" hidden onChange={handleImageUpload} />
-                    </Box>
-                ) : (
-                    <Box
-                        sx={{
-                            p: 4,
-                            border: "2px solid #ccc",
-                        }}
-                    >
-                        <Box
-                            position="relative"
-                            display="inline-block"
-                            onContextMenu={(e) => e.preventDefault()}
-                            sx={{
-                                height: 400,
-                            }}
-                        >
-                            <img
-                                ref={imgRef}
-                                src={previewUrl}
-                                onLoad={handleImageLoad}
-                                onMouseDown={handleImageMouseDown}
-                                alt="preview"
-                                style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "contain",
-                                    cursor: "crosshair",
-                                    display: "block",
-                                    userSelect: "none",
-                                }}
-                            />
-
-                            {/* 클릭 포인트, 마스크 이미지는 그대로 유지 */}
-
-                            {originalSize &&
-                                clickPoints.map(([x, y], index) => {
-                                    const scaleX = imgRef.current!.clientWidth / originalSize.width;
-                                    const scaleY = imgRef.current!.clientHeight / originalSize.height;
-                                    const px = x * scaleX;
-                                    const py = y * scaleY;
-                                    const label = clickLabels[index];
-                                    const color = label === 1 ? "red" : "blue";
-
-                                    return (
-                                        <Box
-                                            key={index}
-                                            position="absolute"
-                                            top={py - 2.5}
-                                            left={px - 2.5}
-                                            width={5}
-                                            height={5}
-                                            bgcolor={color}
-                                            borderRadius="50%"
-                                            border="2px solid white"
-                                            zIndex={10}
-                                        />
-                                    );
-                                })}
-
-                            {resultUrl && (
-                                <img
-                                    src={resultUrl}
-                                    alt="mask"
-                                    style={{
-                                        position: "absolute",
-                                        top: 0,
-                                        left: 0,
-                                        width: "100%",
-                                        height: "100%",
-                                        opacity: 0.6,
-                                        pointerEvents: "none",
-                                        zIndex: 5,
-                                        objectFit: "contain",
-                                    }}
-                                />
-                            )}
-                        </Box>
-
-                        {/* 버튼 영역 */}
-                        <Box sx={{ mt: 2, display: "flex", justifyContent: "center", gap: 2 }}>
-                            <Button
-                                variant={clickPoints.length === 0 ? "outlined" : "contained"}
-                                onClick={handleUndoPoint}
-                                disabled={clickPoints.length === 0}
-                            >
-                                Undo Point
-                            </Button>
-                            <Button
-                                variant={!previewUrl ? "outlined" : "contained"}
-                                onClick={handleResetImage}
-                                disabled={!previewUrl}
-                            >
-                                Reset Image
-                            </Button>
-                            <Button
-                                variant={clickPoints.length === 0 ? "outlined" : "contained"}
-                                disabled={clickPoints.length === 0}
-                                onClick={handleSubmit}
-                            >
-                                {maskLoading ? "Generating..." : "Mask Generate"}
-                            </Button>
-                        </Box>
-                    </Box>
-                )}
-
-                <TextField
-                    fullWidth
-                    label="Prompt"
-                    variant="outlined"
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    sx={{ mb: 2 }}
-                />
-
-                <FormControl sx={{ flexGrow: 1 }} margin="normal">
-                    <InputLabel>{"Generate Image Size"}</InputLabel>
-                    <Select
-                        value={size}
-                        onChange={(e) => setSize(e.target.value as EditResolution)}
-                        label={"Generate Image Size"}
-                        variant="standard"
-                    >
-                        <MenuItem value="1024x1024">1024x1024</MenuItem>
-                        <MenuItem value="512x512">512x512</MenuItem>
-                        <MenuItem value="256x256">256x256</MenuItem>
-                    </Select>
-                </FormControl>
-
-                <Button variant="contained" disabled={!resultUrl || !prompt || loading} onClick={handleCreateImageEdit}>
-                    {loading ? "Generating..." : "Generate Image"}
-                </Button>
-
+                <Typography
+                    variant="h4"
+                    gutterBottom
+                    sx={{
+                        marginBottom: 3,
+                    }}
+                >
+                    Edit Image(inpaint)
+                </Typography>
                 <Box
                     sx={{
                         display: "flex",
-                        flexDirection: "row",
-                        gap: 2,
+                        flexDirection: "column",
                         width: "100%",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        overflowY: "auto",
+                        gap: 2,
                     }}
                 >
-                    {/* 마스크 미리보기 */}
-                    {resultUrl && (
-                        <Box sx={{}}>
-                            <h4>Generated Mask Preview</h4>
-                            <img
-                                src={resultUrl}
-                                alt="mask preview"
-                                style={{
-                                    maxWidth: "100%",
+                    {!previewUrl ? (
+                        <Box
+                            onClick={handleClickArea}
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            onDragEnter={handleDragEnter}
+                            onDragLeave={handleDragLeave}
+                            sx={{
+                                border: "2px dashed #ccc",
+                                borderRadius: 2,
+                                p: 6,
+                                textAlign: "center",
+                                color: "#555",
+                                cursor: "pointer",
+                                userSelect: "none",
+                                backgroundColor: isDragging ? "#e0f7fa" : "transparent", // 드래그 중일 때 배경색 변경
+                                borderColor: isDragging ? "#00bcd4" : "#ccc", // 테두리 색상 변경
+                                transition: "background-color 0.3s, border-color 0.3s",
+                            }}
+                        >
+                            <Typography variant="body1" color="inherit" sx={{ mb: 1 }}>
+                                click or drag an image
+                            </Typography>
+                            <Typography variant="caption" color="textSecondary">
+                                (optional)
+                            </Typography>
+                            <input ref={inputRef} type="file" accept="image/*" hidden onChange={handleImageUpload} />
+                        </Box>
+                    ) : (
+                        <Box
+                            sx={{
+                                p: 4,
+                                border: "2px solid #ccc",
+                            }}
+                        >
+                            <Box
+                                position="relative"
+                                display="inline-block"
+                                onContextMenu={(e) => e.preventDefault()}
+                                sx={{
                                     height: 400,
-                                    border: "1px solid #ccc",
-                                    borderRadius: 4,
-                                    objectFit: "contain",
                                 }}
-                            />
+                            >
+                                <img
+                                    ref={imgRef}
+                                    src={previewUrl}
+                                    onLoad={handleImageLoad}
+                                    onMouseDown={handleImageMouseDown}
+                                    alt="preview"
+                                    style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        objectFit: "contain",
+                                        cursor: "crosshair",
+                                        display: "block",
+                                        userSelect: "none",
+                                    }}
+                                />
+
+                                {/* 클릭 포인트, 마스크 이미지는 그대로 유지 */}
+
+                                {originalSize &&
+                                    clickPoints.map(([x, y], index) => {
+                                        const scaleX = imgRef.current!.clientWidth / originalSize.width;
+                                        const scaleY = imgRef.current!.clientHeight / originalSize.height;
+                                        const px = x * scaleX;
+                                        const py = y * scaleY;
+                                        const label = clickLabels[index];
+                                        const color = label === 1 ? "red" : "blue";
+
+                                        return (
+                                            <Box
+                                                key={index}
+                                                position="absolute"
+                                                top={py - 2.5}
+                                                left={px - 2.5}
+                                                width={5}
+                                                height={5}
+                                                bgcolor={color}
+                                                borderRadius="50%"
+                                                border="2px solid white"
+                                                zIndex={10}
+                                            />
+                                        );
+                                    })}
+
+                                {resultUrl && (
+                                    <img
+                                        src={resultUrl}
+                                        alt="mask"
+                                        style={{
+                                            position: "absolute",
+                                            top: 0,
+                                            left: 0,
+                                            width: "100%",
+                                            height: "100%",
+                                            opacity: 0.6,
+                                            pointerEvents: "none",
+                                            zIndex: 5,
+                                            objectFit: "contain",
+                                        }}
+                                    />
+                                )}
+                            </Box>
+
+                            {/* 버튼 영역 */}
+                            <Box sx={{ mt: 2, display: "flex", justifyContent: "center", gap: 2 }}>
+                                <Button
+                                    variant={clickPoints.length === 0 ? "outlined" : "contained"}
+                                    onClick={handleUndoPoint}
+                                    disabled={clickPoints.length === 0}
+                                >
+                                    Undo Point
+                                </Button>
+                                <Button
+                                    variant={!previewUrl ? "outlined" : "contained"}
+                                    onClick={handleResetImage}
+                                    disabled={!previewUrl}
+                                >
+                                    Reset Image
+                                </Button>
+                                <Button
+                                    variant={clickPoints.length === 0 ? "outlined" : "contained"}
+                                    disabled={clickPoints.length === 0}
+                                    onClick={handleSubmit}
+                                >
+                                    {maskLoading ? "Generating..." : "Mask Generate"}
+                                </Button>
+                            </Box>
                         </Box>
                     )}
 
-                    {editResultUrl && (
-                        <Box>
-                            <h4>Edited Result Image:</h4>
-                            <img
-                                src={editResultUrl}
-                                alt="edited"
-                                style={{
-                                    maxWidth: "100%",
-                                    height: 400,
-                                    border: "1px solid #ccc",
-                                }}
-                            />
-                        </Box>
-                    )}
-                </Box>
+                    <TextField
+                        fullWidth
+                        label="Prompt"
+                        variant="outlined"
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        sx={{ mb: 2 }}
+                    />
 
-                {/* {resizedFileImageUrl && (
+                    <FormControl sx={{ flexGrow: 1 }} margin="normal">
+                        <InputLabel>{"Generate Image Size"}</InputLabel>
+                        <Select
+                            value={size}
+                            onChange={(e) => setSize(e.target.value as EditResolution)}
+                            label={"Generate Image Size"}
+                            variant="standard"
+                        >
+                            <MenuItem value="1024x1024">1024x1024</MenuItem>
+                            <MenuItem value="512x512">512x512</MenuItem>
+                            <MenuItem value="256x256">256x256</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <Button
+                        variant="contained"
+                        disabled={!resultUrl || !prompt || loading}
+                        onClick={handleCreateImageEdit}
+                    >
+                        {loading ? "Generating..." : "Generate Image"}
+                    </Button>
+
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                            width: "100%",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        {/* 마스크 미리보기 */}
+                        {resultUrl && (
+                            <Box sx={{}}>
+                                <h4>Generated Mask Preview</h4>
+                                <img
+                                    src={resultUrl}
+                                    alt="mask preview"
+                                    style={{
+                                        maxWidth: "100%",
+                                        height: 400,
+                                        border: "1px solid #ccc",
+                                        borderRadius: 4,
+                                        objectFit: "contain",
+                                    }}
+                                />
+                            </Box>
+                        )}
+
+                        {editResultUrl && (
+                            <Box>
+                                <h4>Edited Result Image:</h4>
+                                <img
+                                    src={editResultUrl}
+                                    alt="edited"
+                                    style={{
+                                        maxWidth: "100%",
+                                        height: 400,
+                                        border: "1px solid #ccc",
+                                    }}
+                                />
+                            </Box>
+                        )}
+                    </Box>
+
+                    {/* {resizedFileImageUrl && (
                     <div>
                         <h4>Resized Original Image Preview</h4>
                         <img
@@ -600,7 +616,7 @@ export const CreateImageEdit = () => {
                     </div>
                 )} */}
 
-                {/* {resizedMaskImageUrl && (
+                    {/* {resizedMaskImageUrl && (
                     <div>
                         <h4>Resized Mask Image Preview</h4>
                         <img
@@ -610,6 +626,7 @@ export const CreateImageEdit = () => {
                         />
                     </div>
                 )} */}
+                </Box>
             </Box>
         </Container>
     );
