@@ -1,15 +1,21 @@
 from contextlib import nullcontext
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
-from typing import List
 import torch
 from PIL import Image
 from io import BytesIO
 import numpy as np
 import json
-
 from sam2.sam2_image_predictor import SAM2ImagePredictor
+import nltk
+from urllib.parse import urlparse
+from crawler.crawl_func import summarize_text, get_summarizer, fetch_github_readme, crawl_blog_content_hybrid
+
+class URLRequest(BaseModel):
+    url: str
+
 
 DEBUG = False
 app = FastAPI()
@@ -23,6 +29,13 @@ app.add_middleware(
 )
 
 predictor = SAM2ImagePredictor.from_pretrained("facebook/sam2-hiera-base-plus")
+
+
+@app.on_event("startup")
+def download_nltk_resources():
+    nltk.download("punkt")
+    nltk.download('punkt_tab')
+
 
 @app.post("/segment")
 async def segment_image(
@@ -80,5 +93,29 @@ async def segment_image(
         buf.seek(0)
         return StreamingResponse(buf, media_type="image/png")
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/crawl/summarize")
+async def summarize_url(request: URLRequest):
+    url = request.url
+    try:
+        # crawling
+        parsed = urlparse(url)
+        domain = parsed.netloc.lower()
+
+        if "github.com" in domain:
+            raw_text = fetch_github_readme(url)
+        else:
+            raw_text = crawl_blog_content_hybrid(url)
+
+        # LLM summarize
+        summarizer, tokenizer = get_summarizer(raw_text)
+        summary = summarize_text(raw_text, summarizer, tokenizer)
+        return {
+            "raw_text": raw_text,
+            "summary": summary
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

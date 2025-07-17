@@ -1,3 +1,5 @@
 /sam2
 /server/*.png
 /server/*.txt
+
+*.pyc
