@@ -1,15 +1,23 @@
 from readability import Document
 import requests
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 from nltk.tokenize import sent_tokenize
 import re
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 # ⬇️ 눈에 보이는 태그 필터링
+
+
 def tag_visible(element):
     if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
         return False
@@ -18,6 +26,8 @@ def tag_visible(element):
     return True
 
 # ⬇️ visible text 방식으로 크롤링
+
+
 def extract_visible_text(html):
     soup = BeautifulSoup(html, 'html.parser')
     texts = soup.find_all(text=True)
@@ -25,10 +35,13 @@ def extract_visible_text(html):
     return "\n".join(t.strip() for t in visible_texts if t.strip())
 
 # ⬇️ 공백 줄 제거
+
+
 def clean_text(text):
     lines = text.splitlines()
     cleaned = [line.strip() for line in lines if line.strip()]
     return "\n".join(cleaned)
+
 
 def chunk_text(text, max_tokens=800, tokenizer=None):
     sentences = sent_tokenize(text)
@@ -46,16 +59,34 @@ def chunk_text(text, max_tokens=800, tokenizer=None):
     return chunks
 
 # ⬇️ 하이브리드 방식의 본문 크롤링 함수
+
+
 def crawl_blog_content_hybrid(url):
+    logging.info(f"crawl_blog_content_hybrid started for: {url}")
+
     options = Options()
-    options.add_argument("--headless")
+    options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    driver = webdriver.Chrome(options=options)
-
+    options.add_argument("start-maximized")
+    options.add_argument("disable-blink-features=AutomationControlled")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    options.add_argument(
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
     try:
+        driver = webdriver.Chrome(options=options)
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+                Object.defineProperty(navigator, 'webdriver', { get: () => undefined })
+            """
+        })
+
         driver.get(url)
-        time.sleep(3)
+
+        # 명시적 대기: body 요소가 로드될 때까지 최대 10초 대기
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+
         html = driver.page_source
 
         # Step 1: Readability 방식 시도
@@ -66,26 +97,38 @@ def crawl_blog_content_hybrid(url):
             raw_text = soup.get_text(separator="\n")
             readable_text = clean_text(raw_text)
         except Exception:
+            logging.warning("Readability 방식 실패", exc_info=True)
             readable_text = ""
 
         # Step 2: fallback if readable_text is too short
-        if len(readable_text) < 200:  # 짧다고 판단되는 기준은 조정 가능
-            fallback_text = extract_visible_text(html)
-            return clean_text(fallback_text)
+        if len(readable_text) < 200:
+            logging.info("Fallback 방식 사용: extract_visible_text")
+            try:
+                fallback_text = extract_visible_text(html)
+                return clean_text(fallback_text)
+            except Exception:
+                logging.error("extract_visible_text 실패", exc_info=True)
+                return ""  # 또는 raise
 
+        logging.info(f"crawl_blog_content_hybrid finish for: {url}")
         return readable_text
 
+    except Exception:
+        logging.error(f"크롤링 전체 실패: {url}", exc_info=True)
+        raise
+
     finally:
-        driver.quit()
+        if 'driver' in locals():
+            driver.quit()
 
 def fetch_github_readme(repo_url):
     match = re.search(r"github\.com/([^/]+/[^/]+)", repo_url)
     if not match:
         return "Invalid GitHub URL"
-    
+
     repo = match.group(1)
 
-    branches = ['main']
+    branches = ['main', 'master']
     headers = {'User-Agent': 'Mozilla/5.0'}
 
     for branch in branches:
@@ -101,6 +144,7 @@ def fetch_github_readme(repo_url):
     print("README 직접 접근 실패, 페이지에서 본문 크롤링 시도 중...")
     return crawl_blog_content_hybrid(repo_url)
 
+
 def summarize_text(text, summarizer, tokenizer, max_length=130, min_length=30, max_chunk_tokens=800):
     chunks = chunk_text(text, max_tokens=max_chunk_tokens, tokenizer=tokenizer)
     summaries = []
@@ -108,6 +152,7 @@ def summarize_text(text, summarizer, tokenizer, max_length=130, min_length=30, m
         summary = summarizer(chunk, max_new_tokens=max_length, do_sample=False)
         summaries.append(summary[0]['summary_text'])
     return " ".join(summaries)
+
 
 def get_summarizer():
     model_name = "facebook/bart-large-cnn"
