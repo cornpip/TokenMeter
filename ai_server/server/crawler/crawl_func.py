@@ -110,7 +110,7 @@ def crawl_blog_content_hybrid(url):
                 logging.error("extract_visible_text 실패", exc_info=True)
                 return ""  # 또는 raise
 
-        logging.info(f"crawl_blog_content_hybrid finish for: {url}")
+        logging.info(f"crawl_blog_content_hybrid finish")
         return readable_text
 
     except Exception:
@@ -122,6 +122,7 @@ def crawl_blog_content_hybrid(url):
             driver.quit()
 
 def fetch_github_readme(repo_url):
+    logging.info(f"fetch_github_readme started for: {repo_url}")
     match = re.search(r"github\.com/([^/]+/[^/]+)", repo_url)
     if not match:
         return "Invalid GitHub URL"
@@ -136,12 +137,13 @@ def fetch_github_readme(repo_url):
         try:
             response = requests.get(raw_url, headers=headers, timeout=5)
             if response.status_code == 200:
+                logging.info(f"fetch_github_readme finish")
                 return response.text
         except requests.RequestException as e:
             return f"Request error: {e}"
 
     # README를 못가져왔으면 fallback으로 웹 크롤링 시도
-    print("README 직접 접근 실패, 페이지에서 본문 크롤링 시도 중...")
+    logging.info(f"README 직접 접근 실패, 페이지에서 본문 크롤링 시도 중...")
     return crawl_blog_content_hybrid(repo_url)
 
 
