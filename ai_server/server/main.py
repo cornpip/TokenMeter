@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 from crawler.crawl_func import summarize_text, fetch_github_readme, crawl_blog_content_hybrid
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
+
 class URLRequest(BaseModel):
     url: str
 
@@ -34,9 +35,11 @@ sam2_predictor = None
 summarizer_pipeline = None
 summarizer_tokenizer = None
 
+
 def get_summarizer():
     global summarizer_pipeline, summarizer_tokenizer
     return summarizer_pipeline, summarizer_tokenizer
+
 
 @app.on_event("startup")
 def download_nltk_resources():
@@ -47,12 +50,22 @@ def download_nltk_resources():
     summarizer_tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    summarizer_pipeline = pipeline("summarization", model=model, tokenizer=tokenizer)
+
+    tokenizer.model_max_length = 1024
+    summarizer_pipeline = pipeline(
+        "summarization",
+        model=model,
+        tokenizer=tokenizer,
+        framework="pt",
+        device=0,
+    )
 
     nltk.download("punkt")
     nltk.download('punkt_tab')
 
-    sam2_predictor = SAM2ImagePredictor.from_pretrained("facebook/sam2-hiera-base-plus")
+    sam2_predictor = SAM2ImagePredictor.from_pretrained(
+        "facebook/sam2-hiera-base-plus")
+
 
 @app.post("/segment")
 async def segment_image(

@@ -12,6 +12,7 @@ from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
 from nltk.tokenize import sent_tokenize
 import re
 import logging
+from tqdm import tqdm
 
 logging.basicConfig(level=logging.INFO)
 
@@ -45,17 +46,25 @@ def clean_text(text):
 
 def chunk_text(text, max_tokens=800, tokenizer=None):
     sentences = sent_tokenize(text)
+    sentence_tokens = [tokenizer.encode(
+        s, add_special_tokens=False) for s in sentences]
+
     chunks = []
-    current_chunk = ""
-    for sent in sentences:
-        trial = current_chunk + " " + sent if current_chunk else sent
-        if tokenizer and len(tokenizer.encode(trial)) > max_tokens:
-            chunks.append(current_chunk)
-            current_chunk = sent
+    current_chunk = []
+    current_len = 0
+
+    for tokens, sent in zip(sentence_tokens, sentences):
+        if current_len + len(tokens) > max_tokens:
+            chunks.append(" ".join(current_chunk))
+            current_chunk = [sent]
+            current_len = len(tokens)
         else:
-            current_chunk = trial
+            current_chunk.append(sent)
+            current_len += len(tokens)
+
     if current_chunk:
-        chunks.append(current_chunk)
+        chunks.append(" ".join(current_chunk))
+
     return chunks
 
 # ⬇️ 하이브리드 방식의 본문 크롤링 함수
@@ -85,7 +94,8 @@ def crawl_blog_content_hybrid(url):
         driver.get(url)
 
         # 명시적 대기: body 요소가 로드될 때까지 최대 10초 대기
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body")))
 
         html = driver.page_source
 
@@ -121,6 +131,7 @@ def crawl_blog_content_hybrid(url):
         if 'driver' in locals():
             driver.quit()
 
+
 def fetch_github_readme(repo_url):
     logging.info(f"fetch_github_readme started for: {repo_url}")
     match = re.search(r"github\.com/([^/]+/[^/]+)", repo_url)
@@ -147,12 +158,34 @@ def fetch_github_readme(repo_url):
     return crawl_blog_content_hybrid(repo_url)
 
 
-def summarize_text(text, summarizer, tokenizer, max_length=130, min_length=30, max_chunk_tokens=800):
+def summarize_text(text, summarizer, tokenizer, min_length=30, max_chunk_tokens=800):
     chunks = chunk_text(text, max_tokens=max_chunk_tokens, tokenizer=tokenizer)
     summaries = []
-    for chunk in chunks:
-        summary = summarizer(chunk, max_new_tokens=max_length, do_sample=False)
-        summaries.append(summary[0]['summary_text'])
+    default_output_len = int(max_chunk_tokens * 0.7)
+
+    for idx, chunk in enumerate(tqdm(chunks, desc="Summarizing_per_chunk")):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        try:
+            # 입력 토큰 길이 간단히 측정
+            input_len = len(tokenizer.encode(chunk))
+            output_len = max(min_length, int(input_len * 0.7))
+            if abs(output_len - default_output_len) < 30:
+                output_len = default_output_len
+
+            summary = summarizer(
+                chunk,
+                max_length=output_len,
+                min_length=min_length,
+                truncation=True,
+                do_sample=False,
+            )
+            summaries.append(summary[0]['summary_text'])
+        except Exception:
+            logging.warning(f"[Chunk {idx}] 요약 실패", exc_info=True)
+            logging.warning(f"내용 요약 실패 chunk: {repr(chunk[:200])}...")
+
     return " ".join(summaries)
 
 
