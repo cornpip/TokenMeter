@@ -1,4 +1,4 @@
-import { Alert, Box, IconButton, InputAdornment, Snackbar, styled, TextField } from "@mui/material";
+import { Alert, Box, IconButton, InputAdornment, Snackbar, styled, TextField, Typography } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { crawlAndSummary, createChat, createRoom, getAllConfig, updateChat } from "../api/api";
@@ -85,7 +85,7 @@ const extractUrls = (text: string): string[] => {
  * 주어진 메시지에서 URL을 추출하고 각 URL에 대해 요약을 가져온 뒤,
  * 해당 URL 옆에 (crawling summary: ...) 형식으로 삽입하여 반환
  */
-const appendSummariesToMessage = async (message: string): Promise<string> => {
+const crawlAndSummaryAndAppend = async (message: string): Promise<string> => {
     const urls = extractUrls(message);
     const summarizeList: (SummaryResponse & { url: string })[] = [];
 
@@ -96,8 +96,9 @@ const appendSummariesToMessage = async (message: string): Promise<string> => {
         }
     }
 
-    for (const summary of summarizeList) {
-        message = message.replaceAll(summary.url, `${summary.url} (crawling summary: ${summary.summary})`);
+    for (const { url, summary } of summarizeList) {
+        const block = [url, "```text", "(...crawling summary...)", summary.trim(), "```", ""].join("\n");
+        message = message.replaceAll(url, block);
     }
 
     return message;
@@ -107,6 +108,7 @@ export const SubmitComponent = () => {
     const [message, setMessage] = useState("");
     const [isDragOver, setIsDragOver] = useState(false);
     const [textFieldOff, setTextFieldOff] = useState<boolean>(false);
+    const [isCrawlRunning, setIsCrawlRunning] = useState<boolean>(false);
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [alertOpen, setAlertOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -352,8 +354,9 @@ export const SubmitComponent = () => {
             setTextFieldOff(true);
 
             // url crawling/summarize/append
-            trimmedMessage = await appendSummariesToMessage(trimmedMessage);
-            // console.log(trimmedMessage);
+            setIsCrawlRunning(true);
+            trimmedMessage = await crawlAndSummaryAndAppend(trimmedMessage);
+            setIsCrawlRunning(false);
 
             let n_msgHistory: ChatCompletionMessageParam[] = [];
             // system message settings
@@ -534,13 +537,38 @@ export const SubmitComponent = () => {
                     ))}
                 </ImagePreviewList>
             )}
+            {isCrawlRunning ? (
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                        alignSelf: "flex-start",
+                        ml: 1,
+                        mb: 1,
+                    }}
+                >
+                    🔍 Searching web...
+                </Typography>
+            ) : textFieldOff ? (
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                        alignSelf: "flex-start",
+                        ml: 1,
+                        mb: 1,
+                    }}
+                >
+                    🧐 Please wait...
+                </Typography>
+            ) : null}
             <TextField
                 inputRef={inputRef}
                 fullWidth
                 multiline
                 disabled={textFieldOff}
                 maxRows={safeRoomId !== "0" ? 8 : 20}
-                placeholder="메시지 입력"
+                placeholder={"Enter your question"}
                 variant="outlined"
                 sx={{
                     "& .MuiOutlinedInput-root": {
