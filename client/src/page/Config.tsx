@@ -3,15 +3,14 @@ import {
     Autocomplete,
     Box,
     Button,
-    Container,
     IconButton,
-    Slider,
     TextField,
     Typography,
     List,
     ListItem,
     ListItemText,
     Stack,
+    Switch,
 } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConfigEntity } from "../interface/entity";
@@ -48,6 +47,7 @@ export const Config = () => {
         selected_model: "",
         max_message: -1,
         system_message: "",
+        crawling_enabled: 0,
     });
     const queryClient = useQueryClient();
     const [instruct, setInstruct] = useState("");
@@ -228,6 +228,31 @@ export const Config = () => {
                             sx={{ width: "100%", marginBottom: 2 }}
                             disabled={!isEditable}
                         />
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                        <Switch
+                            checked={n_config.crawling_enabled == 1}
+                            onChange={(e) => {
+                                n_setConfig((v) => {
+                                    return { ...v, crawling_enabled: e.target.checked ? 1 : 0 };
+                                });
+                            }}
+                            disabled={!isEditable}
+                        />
+                        <Typography
+                            variant="body2"
+                            color={
+                                !isEditable
+                                    ? "text.disabled"
+                                    : n_config.crawling_enabled == 1
+                                      ? "primary"
+                                      : "text.secondary"
+                            }
+                        >
+                            {n_config.crawling_enabled == 1
+                                ? "✅ Crawling & Summary Enabled"
+                                : "⚪ Crawling & Summary Disabled"}
+                        </Typography>
                     </Box>
                     <Box sx={{ mt: 1 }}>
                         <Typography variant="h5" gutterBottom>

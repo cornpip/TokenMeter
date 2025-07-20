@@ -354,9 +354,11 @@ export const SubmitComponent = () => {
             setTextFieldOff(true);
 
             // url crawling/summarize/append
-            setIsCrawlRunning(true);
-            trimmedMessage = await crawlAndSummaryAndAppend(trimmedMessage);
-            setIsCrawlRunning(false);
+            if (config.crawling_enabled == 1) {
+                setIsCrawlRunning(true);
+                trimmedMessage = await crawlAndSummaryAndAppend(trimmedMessage);
+                setIsCrawlRunning(false);
+            }
 
             let n_msgHistory: ChatCompletionMessageParam[] = [];
             // system message settings
