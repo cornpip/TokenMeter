@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCreateDto, ChatUpdateDto, ConfigUpdateDto } from "../interface/dto";
+import { SummaryResponse } from "./api.interface";
 
 const devMode = import.meta.env.VITE_DEV_MODE;
 const API_PORT = import.meta.env.VITE_API_PORT;
@@ -30,6 +31,24 @@ export const api = axios.create({
 export const aiApi = axios.create({
     baseURL: _aiBaseUrl,
 });
+
+export const crawlAndSummary = async (url: string): Promise<SummaryResponse | null> => {
+    try {
+        const response = await aiApi.post(
+            "/crawl/summarize",
+            { url },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.data;
+    } catch (err) {
+        console.error("crawlAndSummary 실패:", err);
+        return null;
+    }
+};
 
 type Point = [number, number];
 export const segmentWithPoints = async (imageFile: File, points: Point[], labels: number[]) => {

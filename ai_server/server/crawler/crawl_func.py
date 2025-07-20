@@ -199,6 +199,7 @@ def summarize_text_batch(text, model, tokenizer, device="cuda", max_tokens=512, 
     # extract_visible_text 로 raw_text 뽑으면 양이 너무 많음
     num_iterations = (len(input_texts) + batch_size - 1) // batch_size
     if num_iterations >= 4:
+        logging.warning(f"요약 반복 횟수가 너무 많음: {num_iterations}회 (4회 이상 실행하지 않음)")
         raise ValueError(f"요약 반복 횟수가 너무 많음: {num_iterations}회 (4회 이상 실행하지 않음)")
 
     summaries = []
