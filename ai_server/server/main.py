@@ -11,7 +11,7 @@ import json
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 import nltk
 from urllib.parse import urlparse
-from crawler.crawl_func import summarize_text, fetch_github_readme, crawl_blog_content_hybrid
+from crawler.crawl_func import summarize_text, fetch_github_readme, crawl_blog_content_hybrid, summarize_text_batch
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
 
 
@@ -34,27 +34,28 @@ app.add_middleware(
 sam2_predictor = None
 summarizer_pipeline = None
 summarizer_tokenizer = None
+summarizer_model = None
 
 
 def get_summarizer():
-    global summarizer_pipeline, summarizer_tokenizer
-    return summarizer_pipeline, summarizer_tokenizer
+    global summarizer_pipeline, summarizer_tokenizer, summarizer_model
+    return summarizer_pipeline, summarizer_tokenizer, summarizer_model
 
 
 @app.on_event("startup")
 def download_nltk_resources():
-    global summarizer_pipeline, summarizer_tokenizer
+    global summarizer_pipeline, summarizer_tokenizer, summarizer_model
     global sam2_predictor
 
     model_name = "facebook/bart-large-cnn"
     summarizer_tokenizer = AutoTokenizer.from_pretrained(model_name)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+    summarizer_model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
     tokenizer.model_max_length = 1024
     summarizer_pipeline = pipeline(
         "summarization",
-        model=model,
+        model=summarizer_model,
         tokenizer=tokenizer,
         framework="pt",
         device=0,
@@ -142,8 +143,18 @@ async def summarize_url(request: URLRequest):
             raw_text = crawl_blog_content_hybrid(url)
 
         # LLM summarize
-        summarizer, tokenizer = get_summarizer()
-        summary = summarize_text(raw_text, summarizer, tokenizer)
+        summarizer, tokenizer, model = get_summarizer()
+
+        # summary = summarize_text(raw_text, summarizer, tokenizer)
+        summary = summarize_text_batch(
+            text=raw_text,
+            model=model,
+            tokenizer=tokenizer,
+            device="cuda" if torch.cuda.is_available() else "cpu",
+            max_tokens=800,
+            batch_size=8,
+        )
+
         return {
             "raw_text": raw_text,
             "summary": summary

@@ -5,7 +5,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
@@ -13,6 +12,7 @@ from nltk.tokenize import sent_tokenize
 import re
 import logging
 from tqdm import tqdm
+import torch
 
 logging.basicConfig(level=logging.INFO)
 
@@ -42,30 +42,6 @@ def clean_text(text):
     lines = text.splitlines()
     cleaned = [line.strip() for line in lines if line.strip()]
     return "\n".join(cleaned)
-
-
-def chunk_text(text, max_tokens=800, tokenizer=None):
-    sentences = sent_tokenize(text)
-    sentence_tokens = [tokenizer.encode(
-        s, add_special_tokens=False) for s in sentences]
-
-    chunks = []
-    current_chunk = []
-    current_len = 0
-
-    for tokens, sent in zip(sentence_tokens, sentences):
-        if current_len + len(tokens) > max_tokens:
-            chunks.append(" ".join(current_chunk))
-            current_chunk = [sent]
-            current_len = len(tokens)
-        else:
-            current_chunk.append(sent)
-            current_len += len(tokens)
-
-    if current_chunk:
-        chunks.append(" ".join(current_chunk))
-
-    return chunks
 
 # ⬇️ 하이브리드 방식의 본문 크롤링 함수
 
@@ -158,6 +134,30 @@ def fetch_github_readme(repo_url):
     return crawl_blog_content_hybrid(repo_url)
 
 
+def chunk_text(text, max_tokens=800, tokenizer=None):
+    sentences = sent_tokenize(text)
+    sentence_tokens = [tokenizer.encode(
+        s, add_special_tokens=False) for s in sentences]
+
+    chunks = []
+    current_chunk = []
+    current_len = 0
+
+    for tokens, sent in zip(sentence_tokens, sentences):
+        if current_len + len(tokens) > max_tokens:
+            chunks.append(" ".join(current_chunk))
+            current_chunk = [sent]
+            current_len = len(tokens)
+        else:
+            current_chunk.append(sent)
+            current_len += len(tokens)
+
+    if current_chunk:
+        chunks.append(" ".join(current_chunk))
+
+    return chunks
+
+
 def summarize_text(text, summarizer, tokenizer, min_length=30, max_chunk_tokens=800):
     chunks = chunk_text(text, max_tokens=max_chunk_tokens, tokenizer=tokenizer)
     summaries = []
@@ -185,6 +185,37 @@ def summarize_text(text, summarizer, tokenizer, min_length=30, max_chunk_tokens=
         except Exception:
             logging.warning(f"[Chunk {idx}] 요약 실패", exc_info=True)
             logging.warning(f"내용 요약 실패 chunk: {repr(chunk[:200])}...")
+
+    return " ".join(summaries)
+
+
+def summarize_text_batch(text, model, tokenizer, device="cuda", max_tokens=512, batch_size=2):
+    model.eval()
+    model.to(device)
+
+    chunks = chunk_text(text, max_tokens=max_tokens, tokenizer=tokenizer)
+    input_texts = [chunk.strip() for chunk in chunks if chunk.strip()]
+
+    # extract_visible_text 로 raw_text 뽑으면 양이 너무 많음
+    num_iterations = (len(input_texts) + batch_size - 1) // batch_size
+    if num_iterations >= 4:
+        raise ValueError(f"요약 반복 횟수가 너무 많음: {num_iterations}회 (4회 이상 실행하지 않음)")
+
+    summaries = []
+    for i in tqdm(range(0, len(input_texts), batch_size), desc="Summarizing_in_batches"):
+        batch = input_texts[i:i+batch_size]
+        inputs = tokenizer(batch, return_tensors="pt", padding=True,
+                           truncation=True, max_length=max_tokens).to(device)
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_length=150,
+                min_length=30,
+                do_sample=False,
+                num_beams=2
+            )
+        decoded = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+        summaries.extend(decoded)
 
     return " ".join(summaries)
 
