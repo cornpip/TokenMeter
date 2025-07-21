@@ -16,9 +16,8 @@ import torch
 
 logging.basicConfig(level=logging.INFO)
 
+
 # ⬇️ 눈에 보이는 태그 필터링
-
-
 def tag_visible(element):
     if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
         return False
@@ -26,26 +25,23 @@ def tag_visible(element):
         return False
     return True
 
+
 # ⬇️ visible text 방식으로 크롤링
-
-
 def extract_visible_text(html):
     soup = BeautifulSoup(html, 'html.parser')
     texts = soup.find_all(text=True)
     visible_texts = filter(tag_visible, texts)
     return "\n".join(t.strip() for t in visible_texts if t.strip())
 
+
 # ⬇️ 공백 줄 제거
-
-
 def clean_text(text):
     lines = text.splitlines()
     cleaned = [line.strip() for line in lines if line.strip()]
     return "\n".join(cleaned)
 
+
 # ⬇️ 하이브리드 방식의 본문 크롤링 함수
-
-
 def crawl_blog_content_hybrid(url):
     logging.info(f"crawl_blog_content_hybrid started for: {url}")
 

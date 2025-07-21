@@ -1,7 +1,17 @@
 #!/bin/bash
 set -e
 
-apt-get update && apt-get install -y jq curl unzip gnupg2 ca-certificates
+# 필수 패키지 설치
+apt-get update && apt-get install -y \
+  jq curl unzip gnupg2 ca-certificates \
+  fonts-liberation \
+  libasound2 libatk-bridge2.0-0 libatk1.0-0 libcups2 libdbus-1-3 \
+  libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 libxcomposite1 libxdamage1 \
+  libxrandr2 xdg-utils libgbm1 libxshmfence1 libu2f-udev libvulkan1 \
+  libpangocairo-1.0-0 libpango-1.0-0 \
+  libxss1 libxtst6 libgtk-3-0 libxcb1 libxcursor1 libxext6 libxi6 libxrender1 \
+  libglib2.0-0 \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # 구글 저장소 설정
 curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
