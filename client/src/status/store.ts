@@ -74,3 +74,13 @@ export const useConfigStore = create<ConfigStore>((set) => ({
             },
         }),
 }));
+
+interface UIStore {
+    isTextFieldOff: boolean;
+    setTextFieldOff: (val: boolean) => void;
+}
+
+export const useUIStore = create<UIStore>((set) => ({
+    isTextFieldOff: false,
+    setTextFieldOff: (val: boolean) => set({ isTextFieldOff: val }),
+}));

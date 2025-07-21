@@ -5,7 +5,7 @@ import { crawlAndSummary, createChat, createRoom, getAllConfig, updateChat } fro
 import { useNavigate, useParams } from "react-router-dom";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
-import { useChatStore, useConfigStore } from "../status/store";
+import { useChatStore, useConfigStore, useUIStore } from "../status/store";
 import OpenAI from "openai";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCompletionContentPart } from "openai/resources/index.mjs";
@@ -107,7 +107,7 @@ const crawlAndSummaryAndAppend = async (message: string): Promise<string> => {
 export const SubmitComponent = () => {
     const [message, setMessage] = useState("");
     const [isDragOver, setIsDragOver] = useState(false);
-    const [textFieldOff, setTextFieldOff] = useState<boolean>(false);
+    const { isTextFieldOff, setTextFieldOff } = useUIStore();
     const [isCrawlRunning, setIsCrawlRunning] = useState<boolean>(false);
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [alertOpen, setAlertOpen] = useState(false);
@@ -474,6 +474,7 @@ export const SubmitComponent = () => {
                 }
             } catch (error: any) {
                 alert(error);
+                setTextFieldOff(false);
             }
         } else if (!openai) {
             alert("Please register the API key first");
@@ -551,7 +552,7 @@ export const SubmitComponent = () => {
                 >
                     🔍 Searching web...
                 </Typography>
-            ) : textFieldOff ? (
+            ) : isTextFieldOff ? (
                 <Typography
                     variant="body2"
                     color="text.secondary"
@@ -568,7 +569,7 @@ export const SubmitComponent = () => {
                 inputRef={inputRef}
                 fullWidth
                 multiline
-                disabled={textFieldOff}
+                disabled={isTextFieldOff}
                 maxRows={safeRoomId !== "0" ? 8 : 20}
                 placeholder={"Enter your question"}
                 variant="outlined"
