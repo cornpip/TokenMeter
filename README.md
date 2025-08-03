@@ -38,17 +38,25 @@ To change this, modify {your_port} in the docker-compose.yml file:
 ...
 ```
 
-## Run Without Docker
+## Run for Development
 
 ### 1. Requirements
 - Node.js must be installed on your system
+- Docker
 
 ### 2. How to Run
 1. git clone https://github.com/cornpip/TokenMeter.git
 2. npm run start
-3. __Service URL: http://localhost:7777/token_meter/viewer/main__
+3. run ai_server (It may take a few minutes the first time you run it.)  
+    1. docker pull cornpip77/token-meter-ai:latest
+    2. run docker script
+```
+docker run -d --gpus all -p 7775:7775 --name token-meter-local-ai -w /app/server cornpip77/token-meter-ai bash -c "uvicorn main:app --host 0.0.0.0 --port 7775"
+```
 
-default port )  
+__Service URL: http://localhost:7777/token_meter/viewer/main__
+
+__default port__  
 token_ai_server: `7775`, token_server: `7776`, token_client: `7777`
 
  
