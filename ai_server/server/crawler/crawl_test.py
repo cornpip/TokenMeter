@@ -15,7 +15,7 @@ def test_crawl_blog_content_hybrid():
         try:
             text = crawl_blog_content_hybrid(url)
             print(f"--- 크롤링 결과 (길이: {len(text)}자) ---")
-            # print(text[:1000])  # 앞 1000자만 출력
+            print(text[:1000])  # 앞 1000자만 출력
             # print(text)
             print("\n\n")
         except Exception as e:
