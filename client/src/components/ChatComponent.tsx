@@ -131,7 +131,9 @@ export const ChatComponent = () => {
             {/* 항상 아래에 붙어있는 Submit */}
             <Box
                 sx={{
-                    padding: 2,
+                    paddingX: 2,
+                    paddingBottom: 2,
+                    paddingTop: 1,
                     maxWidth: maxWidth,
                     width: "100%",
                     margin: "0 auto",

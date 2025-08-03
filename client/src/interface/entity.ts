@@ -23,4 +23,5 @@ export interface ConfigEntity {
     selected_model: string;
     max_message: number;
     system_message: string;
+    crawling_enabled: number;
 }

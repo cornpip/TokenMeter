@@ -6,13 +6,19 @@ WORKDIR /app
 COPY ./server ./server
 
 # 시스템 패키지 설치
-RUN apt update && apt install -y --no-install-recommends git \
+RUN apt update && apt install -y --no-install-recommends \
+    git dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
 # Python 패키지 설치
 RUN pip install --upgrade pip \
     && pip install "fastapi[all]" \
-    && pip install huggingface_hub
+    && pip install huggingface_hub \
+    && pip install requests selenium beautifulsoup4 readability-lxml nltk transformers tqdm
+
+RUN dos2unix /app/server/crawler/install_chromedriver.sh \
+    && chmod +x /app/server/crawler/install_chromedriver.sh \
+    && /app/server/crawler/install_chromedriver.sh
 
 # sam2
 RUN git clone https://github.com/facebookresearch/sam2.git \
@@ -24,4 +30,4 @@ RUN git clone https://github.com/facebookresearch/sam2.git \
 EXPOSE 7775
 
 # Default command
-CMD ["sh", "-c", "cd server && uvicorn main:app --host 0.0.0.0 --port 7775"]
+CMD ["sh", "-c", "cd server && uvicorn main:app --host 0.0.0.0 --port 7775"] 

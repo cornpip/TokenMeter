@@ -1,11 +1,11 @@
-import { Alert, Box, IconButton, InputAdornment, Snackbar, styled, TextField } from "@mui/material";
+import { Alert, Box, IconButton, InputAdornment, Snackbar, styled, TextField, Typography } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createChat, createRoom, getAllConfig, updateChat } from "../api/api";
+import { crawlAndSummary, createChat, createRoom, getAllConfig, updateChat } from "../api/api";
 import { useNavigate, useParams } from "react-router-dom";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
-import { useChatStore, useConfigStore } from "../status/store";
+import { useChatStore, useConfigStore, useUIStore } from "../status/store";
 import OpenAI from "openai";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCompletionContentPart } from "openai/resources/index.mjs";
@@ -13,6 +13,7 @@ import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
 import { ChatCreateDto, ChatUpdateDto } from "../interface/dto";
 import { CONFIG_URL } from "../constants/path.const";
 import { parseStringList } from "../util/JsonUtil";
+import { SummaryResponse } from "../api/api.interface";
 
 const getTitle = (msg: string): string => {
     const max_length: number = 15;
@@ -72,10 +73,42 @@ const ImagePreview = styled("img")({
     objectFit: "cover",
 });
 
+// http:// https:// 로 시작해서
+// 공백, 따옴표(' 또는 "), <, >**를 만나기 전까지의 문자열(길이 1 이상)을 전부 매칭
+const extractUrls = (text: string): string[] => {
+    const urlRegex = /(https?:\/\/[^\s'"<>]+)/g;
+    const matches = text.match(urlRegex);
+    return matches ? matches : [];
+};
+
+/**
+ * 주어진 메시지에서 URL을 추출하고 각 URL에 대해 요약을 가져온 뒤,
+ * 해당 URL 옆에 (crawling summary: ...) 형식으로 삽입하여 반환
+ */
+const crawlAndSummaryAndAppend = async (message: string): Promise<string> => {
+    const urls = extractUrls(message);
+    const summarizeList: (SummaryResponse & { url: string })[] = [];
+
+    for (const url of urls) {
+        const res: SummaryResponse | null = await crawlAndSummary(url);
+        if (res) {
+            summarizeList.push({ ...res, url });
+        }
+    }
+
+    for (const { url, summary } of summarizeList) {
+        const block = [url, "```text", "(...crawling summary...)", summary.trim(), "```", ""].join("\n");
+        message = message.replaceAll(url, block);
+    }
+
+    return message;
+};
+
 export const SubmitComponent = () => {
     const [message, setMessage] = useState("");
     const [isDragOver, setIsDragOver] = useState(false);
-    const [textFieldOff, setTextFieldOff] = useState<boolean>(false);
+    const { isTextFieldOff, setTextFieldOff } = useUIStore();
+    const [isCrawlRunning, setIsCrawlRunning] = useState<boolean>(false);
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [alertOpen, setAlertOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -242,8 +275,11 @@ export const SubmitComponent = () => {
     };
 
     const handleSendMessage = async () => {
+        if (!message.trim()) return;
+        let trimmedMessage = message.trim();
+
         // ================================== msw 처리 ==================================
-        if (message.trim() && import.meta.env.VITE_DEV_MODE == 2) {
+        if (import.meta.env.VITE_DEV_MODE == 2) {
             let n_msgHistory: ChatCompletionMessageParam[] = [];
 
             // system message settings
@@ -253,7 +289,7 @@ export const SubmitComponent = () => {
             }
 
             if (safeRoomId === "0") {
-                await createRoomMutation.mutateAsync(getTitle(message)).then((res) => {
+                await createRoomMutation.mutateAsync(getTitle(trimmedMessage)).then((res) => {
                     safeRoomId = res.data.id;
                     navigate(`./${safeRoomId}`);
                 });
@@ -264,14 +300,14 @@ export const SubmitComponent = () => {
             }
 
             // messaage
-            n_msgHistory.push({ role: "user", content: message });
+            n_msgHistory.push({ role: "user", content: trimmedMessage });
 
             // 질문 요청(db)
             const n_seq = chatData.length ? chatData[chatData.length - 1].sequence + 1 : 0;
             const db_question: ChatCreateDto = {
                 time: new Date().toISOString(),
                 room_id: parseInt(safeRoomId),
-                message: message,
+                message: trimmedMessage,
                 is_answer: 0,
                 sequence: n_seq,
                 used_model: config.selected_model,
@@ -314,7 +350,16 @@ export const SubmitComponent = () => {
         }
 
         // ================================== 진짜 로직 ==================================
-        if (message.trim() && openai) {
+        if (openai) {
+            setTextFieldOff(true);
+
+            // url crawling/summarize/append
+            if (config.crawling_enabled == 1) {
+                setIsCrawlRunning(true);
+                trimmedMessage = await crawlAndSummaryAndAppend(trimmedMessage);
+                setIsCrawlRunning(false);
+            }
+
             let n_msgHistory: ChatCompletionMessageParam[] = [];
             // system message settings
             const systemMsgList = parseStringList(config.system_message);
@@ -325,7 +370,7 @@ export const SubmitComponent = () => {
             if (safeRoomId === "0") {
                 // 채팅 시작이면 방 만들고 -> navigate
                 // setMsgHistory timming = when "chats" usequery running
-                await createRoomMutation.mutateAsync(getTitle(message)).then((res) => {
+                await createRoomMutation.mutateAsync(getTitle(trimmedMessage)).then((res) => {
                     safeRoomId = res.data.id;
                     navigate(`./${safeRoomId}`);
                 });
@@ -342,7 +387,7 @@ export const SubmitComponent = () => {
 
             if (files.length > 0) {
                 const n_content: ChatCompletionContentPart[] = [];
-                n_content.push({ type: "text", text: message });
+                n_content.push({ type: "text", text: trimmedMessage });
 
                 files.forEach((v, i) => {
                     n_content.push({ type: "image_url", image_url: { url: v.base64 } });
@@ -352,9 +397,9 @@ export const SubmitComponent = () => {
 
                 // temp: image input chat
                 imageInput = true;
-                fileHistory = { role: "user", content: message };
+                fileHistory = { role: "user", content: trimmedMessage };
             } else {
-                n_msgHistory.push({ role: "user", content: message });
+                n_msgHistory.push({ role: "user", content: trimmedMessage });
             }
 
             /**
@@ -368,7 +413,7 @@ export const SubmitComponent = () => {
             const db_question: ChatCreateDto = {
                 time: new Date().toISOString(),
                 room_id: parseInt(safeRoomId),
-                message: message,
+                message: trimmedMessage,
                 is_answer: 0,
                 sequence: n_seq,
                 used_model: config.selected_model,
@@ -381,7 +426,6 @@ export const SubmitComponent = () => {
             */
             try {
                 // console.log("######", n_msgHistory);
-                setTextFieldOff(true);
                 const completion = await openai.chat.completions.create({
                     messages: n_msgHistory,
                     model: config.selected_model,
@@ -430,6 +474,7 @@ export const SubmitComponent = () => {
                 }
             } catch (error: any) {
                 alert(error);
+                setTextFieldOff(false);
             }
         } else if (!openai) {
             alert("Please register the API key first");
@@ -495,13 +540,38 @@ export const SubmitComponent = () => {
                     ))}
                 </ImagePreviewList>
             )}
+            {isCrawlRunning ? (
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                        alignSelf: "flex-start",
+                        ml: 1,
+                        mb: 1,
+                    }}
+                >
+                    🔍 Searching web...
+                </Typography>
+            ) : isTextFieldOff ? (
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                        alignSelf: "flex-start",
+                        ml: 1,
+                        mb: 1,
+                    }}
+                >
+                    🧐 Please wait...
+                </Typography>
+            ) : null}
             <TextField
                 inputRef={inputRef}
                 fullWidth
                 multiline
-                disabled={textFieldOff}
+                disabled={isTextFieldOff}
                 maxRows={safeRoomId !== "0" ? 8 : 20}
-                placeholder="메시지 입력"
+                placeholder={"Enter your question"}
                 variant="outlined"
                 sx={{
                     "& .MuiOutlinedInput-root": {

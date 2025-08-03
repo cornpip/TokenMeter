@@ -41,7 +41,8 @@ services:
             options:
                 max-size: '30m'
                 max-file: '3'
-
+        shm_size: 1g
+        
 networks:
     token_meter_network:
         name: token_meter_network

@@ -1,15 +1,23 @@
 from contextlib import nullcontext
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
-from typing import List
 import torch
 from PIL import Image
 from io import BytesIO
 import numpy as np
 import json
-
 from sam2.sam2_image_predictor import SAM2ImagePredictor
+import nltk
+from urllib.parse import urlparse
+from crawler.crawl_func import summarize_text, fetch_github_readme, crawl_blog_content_hybrid, summarize_text_batch
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
+
+
+class URLRequest(BaseModel):
+    url: str
+
 
 DEBUG = False
 app = FastAPI()
@@ -22,7 +30,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-predictor = SAM2ImagePredictor.from_pretrained("facebook/sam2-hiera-base-plus")
+# global variable
+sam2_predictor = None
+summarizer_pipeline = None
+summarizer_tokenizer = None
+summarizer_model = None
+
+
+def get_summarizer():
+    global summarizer_pipeline, summarizer_tokenizer, summarizer_model
+    return summarizer_pipeline, summarizer_tokenizer, summarizer_model
+
+
+@app.on_event("startup")
+def download_nltk_resources():
+    global summarizer_pipeline, summarizer_tokenizer, summarizer_model
+    global sam2_predictor
+
+    model_name = "facebook/bart-large-cnn"
+    summarizer_tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    summarizer_model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+
+    tokenizer.model_max_length = 1024
+    summarizer_pipeline = pipeline(
+        "summarization",
+        model=summarizer_model,
+        tokenizer=tokenizer,
+        framework="pt",
+        device=0,
+    )
+
+    nltk.download("punkt")
+    nltk.download('punkt_tab')
+
+    sam2_predictor = SAM2ImagePredictor.from_pretrained(
+        "facebook/sam2-hiera-base-plus")
+
 
 @app.post("/segment")
 async def segment_image(
@@ -30,10 +74,11 @@ async def segment_image(
     point_coords: str = Form(...),
     point_labels: str = Form(...)
 ):
+    global sam2_predictor
     try:
         contents = await image.read()
         pil_image = Image.open(BytesIO(contents)).convert("RGB")
-        predictor.set_image(pil_image)
+        sam2_predictor.set_image(pil_image)
 
         width, height = pil_image.size
         if DEBUG:
@@ -56,7 +101,7 @@ async def segment_image(
             autocast_ctx = nullcontext()
 
         with torch.inference_mode(), autocast_ctx:
-            masks, scores, logits = predictor.predict(
+            masks, scores, logits = sam2_predictor.predict(
                 point_coords=np.array(coords),
                 point_labels=np.array(labels),
                 mask_input=None,
@@ -80,5 +125,39 @@ async def segment_image(
         buf.seek(0)
         return StreamingResponse(buf, media_type="image/png")
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/crawl/summarize")
+async def summarize_url(request: URLRequest):
+    url = request.url
+    try:
+        # crawling
+        parsed = urlparse(url)
+        domain = parsed.netloc.lower()
+
+        if "github.com" in domain:
+            raw_text = fetch_github_readme(url)
+        else:
+            raw_text = crawl_blog_content_hybrid(url)
+
+        # LLM summarize
+        summarizer, tokenizer, model = get_summarizer()
+
+        # summary = summarize_text(raw_text, summarizer, tokenizer)
+        summary = summarize_text_batch(
+            text=raw_text,
+            model=model,
+            tokenizer=tokenizer,
+            device="cuda" if torch.cuda.is_available() else "cpu",
+            max_tokens=800,
+            batch_size=8,
+        )
+
+        return {
+            "raw_text": raw_text,
+            "summary": summary
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

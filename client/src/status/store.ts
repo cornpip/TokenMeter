@@ -56,6 +56,7 @@ export const useConfigStore = create<ConfigStore>((set) => ({
         selected_model: "",
         max_message: -1,
         system_message: "",
+        crawling_enabled: 0,
     },
     setConfig: (newConfig) =>
         set((state) => ({
@@ -69,6 +70,17 @@ export const useConfigStore = create<ConfigStore>((set) => ({
                 selected_model: "",
                 max_message: -1,
                 system_message: "",
+                crawling_enabled: 0,
             },
         }),
+}));
+
+interface UIStore {
+    isTextFieldOff: boolean;
+    setTextFieldOff: (val: boolean) => void;
+}
+
+export const useUIStore = create<UIStore>((set) => ({
+    isTextFieldOff: false,
+    setTextFieldOff: (val: boolean) => set({ isTextFieldOff: val }),
 }));

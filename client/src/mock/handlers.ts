@@ -194,6 +194,7 @@ let configs: ConfigEntity[] = [
         max_message: 5,
         system_message:
             '["When providing an answer that includes code, always put the code inside a Markdown code block using triple backticks (```) and include the appropriate language identifier (e.g., ```python, ```javascript). Any explanations or other text should be written outside of the code block. If your answer does not include code, just write your response as usual."]',
+        crawling_enabled: 0,
     },
 ];
 
