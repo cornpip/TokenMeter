@@ -15,6 +15,10 @@ import { CONFIG_URL } from "../constants/path.const";
 import { parseStringList } from "../util/JsonUtil";
 import { SummaryResponse } from "../api/api.interface";
 
+const delayFunc = (ms: number): Promise<void> => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 const getTitle = (msg: string): string => {
     const max_length: number = 15;
     return msg.length > max_length ? msg.slice(0, max_length) : msg;
@@ -278,8 +282,9 @@ export const SubmitComponent = () => {
         if (!message.trim()) return;
         let trimmedMessage = message.trim();
 
-        // ================================== msw 처리 ==================================
+        // ================================== gh-phage(mock) logic ==================================
         if (import.meta.env.VITE_DEV_MODE == 2) {
+            setTextFieldOff(true);
             let n_msgHistory: ChatCompletionMessageParam[] = [];
 
             // system message settings
@@ -318,7 +323,7 @@ export const SubmitComponent = () => {
             openAi response mock
             */
             const completionContentMock =
-                "Please install TokenMeter locally and add your OpenAI API key in the configuration settings before using it";
+                "this is mock response message, please install TokenMeter and add your OpenAI API key in the configuration settings before using it";
             n_msgHistory.push({ role: "assistant", content: completionContentMock });
 
             // 질문 응답(db)
@@ -334,6 +339,7 @@ export const SubmitComponent = () => {
                 token_meter_completion: 40,
                 token_meter_total: 70,
             };
+            await delayFunc(2000);
             createChatMutation.mutate(db_answer);
 
             if (db_question_res_data.id) {
@@ -345,11 +351,12 @@ export const SubmitComponent = () => {
                     token_meter_total: 70,
                 });
             }
+            setTextFieldOff(false);
             setMessage("");
             return;
         }
 
-        // ================================== 진짜 로직 ==================================
+        // ================================== main logic(this isn't mock, it's real) ==================================
         if (openai) {
             setTextFieldOff(true);
 
@@ -422,7 +429,7 @@ export const SubmitComponent = () => {
 
             /*
             openAi api
-            답변 시간 걸림, 나중에 stream api 사용하기
+            need response time, todo) stream api
             */
             try {
                 // console.log("######", n_msgHistory);
