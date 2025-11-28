@@ -18,7 +18,7 @@ Please use this as a reference — it’s a mock site.
  
 ### 2. How to Run 
 1. Download or copy the [`docker-compose.yml`](https://github.com/cornpip/TokenMeter/blob/master/docker-compose.yml) file 
-2. Run the command `docker compoes up`  
+2. Run the command `docker compose up`
 (`docker compose pull` before `docker compose up` is the latest update.)
 
 3. __Service URL: http://localhost/token_meter/viewer/main__ 
