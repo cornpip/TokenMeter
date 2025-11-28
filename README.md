@@ -116,23 +116,21 @@ Note: As of February 2024, attachments are not saved to chat history. However, t
 <br><br> 
  
 ![1](./readme_img/9.png)   
-During response generation, the input box is disabled.  
+During response generation, the input box is disabled.
 Real-time (streaming) responses are planned for a future update.
- 
-<br><br> 
- 
-![1](./readme_img/create_image.png)   
+
+![1](./readme_img/create_image.png)
 Click the "Token-Meter (Image)" menu to go to the image generation page.
- 
+
 - Enter a text prompt
 - Choose image size & quality
 - The "prompt refined" shows the final prompt used, which may be modified to improve results.
 
 <br>
 
-![1](./readme_img/inpaint_image.png)   
+![1](./readme_img/inpaint_image.png)
 The mask generator uses the Token-Meter-AI, and image is created using the OpenAI API.
 
-## Questions & Feedback
-I'm continuously improving TokenMeter and truly value your input.  
-If you have any questions, bug reports, or feature requests, feel free to open an issue or submit a pull request. 
+## License
+
+TokenMeter is released under the MIT License. See the [LICENSE](./LICENSE) file for full terms.
