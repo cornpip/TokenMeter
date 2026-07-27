@@ -9,7 +9,7 @@ import { useChatStore, useConfigStore, useUIStore } from "../status/store";
 import OpenAI from "openai";
 import { ConfigEntity } from "../interface/entity";
 import { ChatCompletionContentPart } from "openai/resources/index.mjs";
-import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { ChatCreateDto, ChatUpdateDto } from "../interface/dto";
 import { CONFIG_URL } from "../constants/path.const";
 import { parseStringList } from "../util/JsonUtil";

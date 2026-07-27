@@ -1,4 +1,8 @@
 # TokenMeter 
+
+> [!NOTE]
+> **This project is no longer maintained.** The repository has been archived. Dependencies were last updated in July 2026, but no further updates or support will be provided.
+
 Use the OpenAI API locally just like ChatGPT.   
 Logs data to a local database and tracks token usage. 
  

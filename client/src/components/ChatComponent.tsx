@@ -3,7 +3,7 @@ import { Box, Container } from "@mui/material";
 import { api, getChatsbyRoomId, getRoomById } from "../api/api";
 import { ChatEntity, RoomEntity } from "../interface/entity";
 import { useQuery } from "@tanstack/react-query";
-import { ChatCompletionMessageParam } from "openai/src/resources/index.js";
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 import { MessageBox } from "./message_box/MessageBox";
 import { useNavigate, useParams } from "react-router-dom";
 import { useChatStore } from "../status/store";
